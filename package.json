@@ -1,0 +1,32 @@
+{
+  "name": "timeless-back-end",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node src/index.js",
+    "dev": "NODE_ENV=development node --watch src/index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Donjella/timeless-back-end.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Donjella/timeless-back-end/issues"
+  },
+  "homepage": "https://github.com/Donjella/timeless-back-end#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1"
+  }
+}
