@@ -8,9 +8,16 @@ async function databaseConnect(targetDatabaseURL = null){
 
 }
 
-async function databaseDisconnect(){
-
-}
+async function databaseDisconnect() {
+    try {
+      await mongoose.disconnect();
+      console.log("Disconnected from MongoDB");
+      return true;
+    } catch (error) {
+      console.error("MongoDB disconnection error:", error);
+      throw error;
+    }
+  }
 
 module.exports = {
 	databaseConnect, databaseDisconnect
