@@ -38,10 +38,10 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user'
     },
-    address_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Address'
-    }
+    address: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address'
+      }
   },
   {
     timestamps: true
@@ -62,10 +62,9 @@ userSchema.pre("save", async function (next) {
 
 // Compare password for login
 userSchema.methods.comparePassword = async function (passwordToCheck) {
-  // Ensure password is explicitly selected when querying the user
-  const user = await mongoose.model("User").findById(this._id).select("+password");
-  return bcrypt.compare(passwordToCheck, user.password);
-};
+    return bcrypt.compare(passwordToCheck, this.password);
+  };
+  
 
 // Generate JWT token
 userSchema.methods.generateAuthToken = function () {
