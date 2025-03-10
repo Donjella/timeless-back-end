@@ -26,7 +26,9 @@ const addressSchema = new mongoose.Schema(
       match: [/^\d{4}$/, 'Please provide a valid 4-digit Australian postcode']
     }
   },
-  { timestamps: true }
+  { 
+    timestamps: true 
+  }
 );
 
 // Create and export the Address model
