@@ -35,7 +35,7 @@ const rentalSchema = new mongoose.Schema(
       enum: ["Pending", "Active", "Completed"], 
       default: "Pending"
     },
-    total_rent_price: {
+    total_rental_price: {
       type: Number,
       required: true,
       min: 0
