@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { setPaymentDateOnComplete } = require("../middleware/PaymentMiddleware"); 
+const { setPaymentDateOnComplete } = require("../middleware/paymentMiddleware"); 
 
 // Define the payment schema
 const paymentSchema = new mongoose.Schema(
