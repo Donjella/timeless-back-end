@@ -96,6 +96,27 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private/Admin
+const getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({}).populate('address').select('-password');
+  return res.json(users);
+});
+
+// @desc    Get user by ID
+// @route   GET /api/users/:id
+// @access  Private/Admin
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).populate('address').select('-password');
+  
+  if (user) {
+    return res.json(user);
+  } else {
+    return res.status(404).json({ message: "User not found" });
+  }
+});
+
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
@@ -211,5 +232,7 @@ module.exports = {
   loginUser,
   getUserProfile,
   updateUserProfile,
-  updateUserRole
+  updateUserRole,
+  getUsers,
+  getUserById
 };
