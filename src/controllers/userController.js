@@ -118,8 +118,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update user profile
-// @route   PUT /api/users/profile
+// @desc    Update user profile (PATCH for partial updates)
+// @route   PATCH /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -128,27 +128,24 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  // Update user fields
-  user.first_name = req.body.first_name || user.first_name;
-  user.last_name = req.body.last_name || user.last_name;
-  user.email = req.body.email || user.email;
-  user.phone_number = req.body.phone_number || user.phone_number;
-
-  if (req.body.password) {
-    user.password = req.body.password; // Password will be hashed in pre-save hook
-  }
+  // Update user fields if provided
+  if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
+  if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
+  if (req.body.email !== undefined) user.email = req.body.email;
+  if (req.body.phone_number !== undefined) user.phone_number = req.body.phone_number;
+  if (req.body.password !== undefined) user.password = req.body.password; // Password will be hashed in pre-save hook
 
   try {
-    //  Handle address update
+    // Handle address updates (only if provided)
     if (req.body.street_address || req.body.suburb || req.body.state || req.body.postcode) {
       let address = await Address.findById(user.address);
 
       if (address) {
-        // Update existing address
-        address.street_address = req.body.street_address || address.street_address;
-        address.suburb = req.body.suburb || address.suburb;
-        address.state = req.body.state || address.state;
-        address.postcode = req.body.postcode || address.postcode;
+        // Update existing address fields if provided
+        if (req.body.street_address !== undefined) address.street_address = req.body.street_address;
+        if (req.body.suburb !== undefined) address.suburb = req.body.suburb;
+        if (req.body.state !== undefined) address.state = req.body.state;
+        if (req.body.postcode !== undefined) address.postcode = req.body.postcode;
         await address.save();
       } else {
         // If no existing address, create a new one
@@ -175,10 +172,38 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       address: populatedUser.address,
       token: populatedUser.generateAuthToken(),
     });
+
   } catch (error) {
     console.error("Profile update error:", error);
     return res.status(500).json({ message: "Profile update failed", error: error.message });
   }
+});
+
+// @desc    Update user role (Admin only)
+// @route   PATCH /api/users/role/:id
+// @access  Private/Admin
+const updateUserRole = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+
+  if (!["customer", "admin"].includes(role)) {
+    return res.status(400).json({ message: "Invalid role specified" });
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.params.id,
+    { role },
+    { new: true, runValidators: true } 
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.json({
+    _id: updatedUser._id,
+    role: updatedUser.role,
+    message: `User role updated to ${updatedUser.role}`
+  });
 });
 
 module.exports = {
@@ -186,4 +211,5 @@ module.exports = {
   loginUser,
   getUserProfile,
   updateUserProfile,
+  updateUserRole
 };

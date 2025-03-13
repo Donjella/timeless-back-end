@@ -1,21 +1,23 @@
 const express = require('express');
 const router = express.Router();
-
 const { 
   registerUser, 
   loginUser, 
   getUserProfile, 
-  updateUserProfile 
+  updateUserProfile,
+  updateUserRole
 } = require('../controllers/userController');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-const { protect } = require('../middleware/authMiddleware');
-
-// ✅ Fix: Change '/' to '/register' for user registration
+// Public routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
 // Protected routes
 router.get('/profile', protect, getUserProfile);
-router.put('/profile', protect, updateUserProfile);
+router.patch('/profile', protect, updateUserProfile);
+
+// Admin only routes
+router.patch('/role/:id', protect, admin, updateUserRole);
 
 module.exports = router;
