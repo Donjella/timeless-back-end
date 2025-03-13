@@ -1,13 +1,6 @@
 const User = require('../models/userModel');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const asyncHandler = require('express-async-handler'); 
-
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -18,7 +11,7 @@ const registerUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password } = req.body;
+  const { first_name, last_name, email, password, phone_number } = req.body;
 
   // Check if user already exists
   const userExists = await User.findOne({ email });
@@ -27,19 +20,23 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
-  // Hash the password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Create user
-  const user = await User.create({ name, email, password: hashedPassword });
+  // Create user (password will be hashed in the pre-save hook)
+  const user = await User.create({ 
+    first_name, 
+    last_name, 
+    email, 
+    password,
+    phone_number
+  });
 
   if (user) {
     res.status(201).json({
       _id: user._id,
-      name: user.name,
+      first_name: user.first_name,
+      last_name: user.last_name,
       email: user.email,
-      token: generateToken(user._id),
+      role: user.role,
+      token: user.generateAuthToken(),
     });
   } else {
     res.status(400);
@@ -53,19 +50,28 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Check for user email
-  const user = await User.findOne({ email });
+  // Check for user email - need to explicitly select password as it's excluded by default
+  const user = await User.findOne({ email }).select('+password');
 
-  if (user && (await bcrypt.compare(password, user.password))) {
+  if (!user) {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
+
+  // Check if password matches
+  const isMatch = await user.comparePassword(password);
+  
+  if (isMatch) {
     res.json({
       _id: user._id,
-      name: user.name,
+      first_name: user.first_name,
+      last_name: user.last_name,
       email: user.email,
-      token: generateToken(user._id),
+      role: user.role,
+      token: user.generateAuthToken(),
     });
   } else {
-    res.status(401); // 401 Unauthorized (Incorrect credentials)
-    res.setHeader('WWW-Authenticate', 'Bearer realm="Access to the API"'); // RFC 7235 compliance
+    res.status(401);
     throw new Error('Invalid email or password');
   }
 });
@@ -74,12 +80,18 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
-
-  if (user) {
-    res.json(user);
+  // req.user is already set by the protect middleware
+  if (req.user) {
+    res.json({
+      _id: req.user._id,
+      first_name: req.user.first_name,
+      last_name: req.user.last_name,
+      email: req.user.email,
+      phone_number: req.user.phone_number,
+      role: req.user.role
+    });
   } else {
-    res.status(404); // 404 Not Found (User does not exist)
+    res.status(404);
     throw new Error('User not found');
   }
 });
@@ -88,27 +100,33 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
+  // Find user by ID (set by protect middleware)
+  const user = await User.findById(req.user._id);
 
   if (user) {
-    user.name = req.body.name || user.name;
+    user.first_name = req.body.first_name || user.first_name;
+    user.last_name = req.body.last_name || user.last_name;
     user.email = req.body.email || user.email;
-
+    user.phone_number = req.body.phone_number || user.phone_number;
+    
     if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(req.body.password, salt);
+      user.password = req.body.password;
+      // Password will be hashed in pre-save hook
     }
 
     const updatedUser = await user.save();
 
     res.json({
       _id: updatedUser._id,
-      name: updatedUser.name,
+      first_name: updatedUser.first_name,
+      last_name: updatedUser.last_name,
       email: updatedUser.email,
-      token: generateToken(updatedUser._id),
+      phone_number: updatedUser.phone_number,
+      role: updatedUser.role,
+      token: updatedUser.generateAuthToken(),
     });
   } else {
-    res.status(404); // 404 Not Found (User not found)
+    res.status(404);
     throw new Error('User not found');
   }
 });
