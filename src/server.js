@@ -1,27 +1,32 @@
-// import express to begin using it
+// Import express to begin using it
 const express = require("express");
 
-// import middleware
-const errorHandler = require('./middleware/errorHandler');
+// Import middleware
+const errorHandler = require("./middleware/errorHandler");
 
-// make an instance of an express server
+// Import routes
+const userRoutes = require("./routes/userRoutes"); 
+const watchRoutes = require("./routes/watchRoutes"); 
+
+// Make an instance of an express server
 const app = express();
 
 // Add middleware to parse JSON request bodies
 app.use(express.json());
 
-// configure the server instance with its routes and other middleware
-app.get("/", (request, response) => {
-  response.json({
+// Mount API routes
+app.use("/api/users", userRoutes); 
+app.use("/api/watches", watchRoutes); 
+
+// Base route
+app.get("/", (req, res) => {
+  res.json({
     message: "Hello, world!"
   });
 });
 
-// Error handler middleware (after all routes)
+// Error handler middleware (should be after all routes)
 app.use(errorHandler);
 
 // Server startup is handled in index.js
-
-module.exports = {
-  app
-};
+module.exports = { app };

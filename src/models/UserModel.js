@@ -39,9 +39,10 @@ const userSchema = new mongoose.Schema(
       default: 'customer'
     },
     address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Address'
-      }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Address',
+      required: true
+    }
   },
   {
     timestamps: true
@@ -62,9 +63,8 @@ userSchema.pre("save", async function (next) {
 
 // Compare password for login
 userSchema.methods.comparePassword = async function (passwordToCheck) {
-    return bcrypt.compare(passwordToCheck, this.password);
-  };
-  
+  return bcrypt.compare(passwordToCheck, this.password);
+};
 
 // Generate JWT token
 userSchema.methods.generateAuthToken = function () {

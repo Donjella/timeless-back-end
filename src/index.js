@@ -1,12 +1,21 @@
 const { app } = require("./server");
-
-// Allow the environment variables to work
-// throughout the rest of the server 
 const dotenv = require("dotenv");
+const { databaseConnect } = require("./database"); 
+
+// Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+// Set port
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log("Server running on port " + PORT);
-});
+// Connect to the database before starting the server
+databaseConnect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB:", error);
+    process.exit(1); // Stop the server if the database fails to connect
+  });
