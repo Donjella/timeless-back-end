@@ -6,7 +6,8 @@ const errorHandler = require("./middleware/errorHandler");
 
 // Import routes
 const userRoutes = require("./routes/userRoutes"); 
-const watchRoutes = require("./routes/watchRoutes"); 
+const watchRoutes = require("./routes/watchRoutes");
+const brandRoutes = require("./routes/brandRoutes");
 
 // Make an instance of an express server
 const app = express();
@@ -16,7 +17,8 @@ app.use(express.json());
 
 // Mount API routes
 app.use("/api/users", userRoutes); 
-app.use("/api/watches", watchRoutes); 
+app.use("/api/watches", watchRoutes);
+app.use("/api/brands", brandRoutes);
 
 // Base route
 app.get("/", (req, res) => {
