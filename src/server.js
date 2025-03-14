@@ -10,6 +10,7 @@ const userRoutes = require("./routes/userRoutes");
 const watchRoutes = require("./routes/watchRoutes");
 const brandRoutes = require("./routes/brandRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const addressRoutes = require("./routes/addressRoutes");
 
 // Make an instance of an express server
 const app = express();
@@ -41,6 +42,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/watches", watchRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/addresses", addressRoutes)
+
 
 // Base route
 app.get("/", (req, res) => {
