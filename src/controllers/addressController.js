@@ -1,15 +1,17 @@
-const Address = require("../models/addressModel");
-const asyncHandler = require("express-async-handler");
+const asyncHandler = require('express-async-handler');
+const Address = require('../models/addressModel');
 
 // @desc    Create a new address
 // @route   POST /api/addresses
 // @access  Private (User)
 const createAddress = asyncHandler(async (req, res) => {
-  const { street, city, state, postal_code, country } = req.body;
+  const {
+    street, city, state, postal_code, country,
+  } = req.body;
 
   if (!street || !city || !state || !postal_code || !country) {
     res.status(400);
-    throw new Error("All fields are required");
+    throw new Error('All fields are required');
   }
 
   const address = await Address.create({
@@ -28,7 +30,7 @@ const createAddress = asyncHandler(async (req, res) => {
 // @route   GET /api/addresses
 // @access  Private (Admin)
 const getAddresses = asyncHandler(async (req, res) => {
-  const addresses = await Address.find().populate("user", "name email");
+  const addresses = await Address.find().populate('user', 'name email');
   res.json(addresses);
 });
 
@@ -36,11 +38,11 @@ const getAddresses = asyncHandler(async (req, res) => {
 // @route   GET /api/addresses/:id
 // @access  Private (User)
 const getAddressById = asyncHandler(async (req, res) => {
-  const address = await Address.findById(req.params.id).populate("user", "name email");
+  const address = await Address.findById(req.params.id).populate('user', 'name email');
 
   if (!address) {
     res.status(404);
-    throw new Error("Address not found");
+    throw new Error('Address not found');
   }
 
   res.json(address);
@@ -54,12 +56,12 @@ const updateAddress = asyncHandler(async (req, res) => {
 
   if (!address) {
     res.status(404);
-    throw new Error("Address not found");
+    throw new Error('Address not found');
   }
 
-  if (address.user.toString() !== req.user.id && req.user.role !== "admin") {
+  if (address.user.toString() !== req.user.id && req.user.role !== 'admin') {
     res.status(401);
-    throw new Error("Not authorized to update this address");
+    throw new Error('Not authorized to update this address');
   }
 
   const updatedFields = req.body;
@@ -77,16 +79,16 @@ const deleteAddress = asyncHandler(async (req, res) => {
 
   if (!address) {
     res.status(404);
-    throw new Error("Address not found");
+    throw new Error('Address not found');
   }
 
-  if (address.user.toString() !== req.user.id && req.user.role !== "admin") {
+  if (address.user.toString() !== req.user.id && req.user.role !== 'admin') {
     res.status(401);
-    throw new Error("Not authorized to delete this address");
+    throw new Error('Not authorized to delete this address');
   }
 
   await address.deleteOne();
-  res.json({ message: "Address deleted" });
+  res.json({ message: 'Address deleted' });
 });
 
 module.exports = {

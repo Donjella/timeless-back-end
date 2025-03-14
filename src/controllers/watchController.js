@@ -1,5 +1,5 @@
-const Watch = require('../models/watchModel')
 const asyncHandler = require('express-async-handler');
+const Watch = require('../models/watchModel');
 
 // Function to convert string to title case
 const titleCase = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -12,7 +12,9 @@ const validConditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
 // @access  Private (Admin)
 const createWatch = asyncHandler(async (req, res) => {
   try {
-    const { model, year, rental_day_price, condition, quantity, brand_id } = req.body;
+    const {
+      model, year, rental_day_price, condition, quantity, brand_id,
+    } = req.body;
 
     if (!model || !year || !rental_day_price || !condition || !quantity || !brand_id) {
       res.status(400);
@@ -28,13 +30,13 @@ const createWatch = asyncHandler(async (req, res) => {
       throw new Error(`Invalid condition: '${condition}'. Valid options are: ${validConditions.join(', ')}`);
     }
 
-    const watch = await Watch.create({ 
-      model, 
-      year, 
-      rental_day_price, 
-      condition: formattedCondition, 
-      quantity, 
-      brand: brand_id 
+    const watch = await Watch.create({
+      model,
+      year,
+      rental_day_price,
+      condition: formattedCondition,
+      quantity,
+      brand: brand_id,
     });
 
     if (watch) {
@@ -122,5 +124,5 @@ module.exports = {
   getWatches,
   getWatchById,
   updateWatch,
-  deleteWatch
+  deleteWatch,
 };

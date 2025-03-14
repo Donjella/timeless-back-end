@@ -1,11 +1,12 @@
 const express = require('express');
+
 const router = express.Router();
-const { 
-  createBrand, 
-  getBrands, 
-  getBrandById, 
-  updateBrand, 
-  deleteBrand 
+const {
+  createBrand,
+  getBrands,
+  getBrandById,
+  updateBrand,
+  deleteBrand,
 } = require('../controllers/brandController');
 const { protect, admin } = require('../middleware/authMiddleware');
 

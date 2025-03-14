@@ -1,11 +1,12 @@
 const express = require('express');
+
 const router = express.Router();
-const { 
-  createWatch, 
-  getWatches, 
-  getWatchById, 
-  updateWatch, 
-  deleteWatch 
+const {
+  createWatch,
+  getWatches,
+  getWatchById,
+  updateWatch,
+  deleteWatch,
 } = require('../controllers/watchController');
 const { protect, admin } = require('../middleware/authMiddleware');
 

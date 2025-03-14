@@ -1,5 +1,5 @@
-const Brand = require('../models/brandModel');
 const asyncHandler = require('express-async-handler');
+const Brand = require('../models/brandModel');
 
 // @desc    Create a new brand (Admin only)
 // @route   POST /api/brands
@@ -66,16 +66,16 @@ const updateBrand = asyncHandler(async (req, res) => {
 
   if (brand) {
     // Check if updated name already exists (excluding current brand)
-    const nameExists = await Brand.findOne({ 
+    const nameExists = await Brand.findOne({
       brand_name: { $regex: new RegExp(`^${brand_name}$`, 'i') },
-      _id: { $ne: req.params.id }
+      _id: { $ne: req.params.id },
     });
-    
+
     if (nameExists) {
       res.status(400);
       throw new Error('Brand name already exists');
     }
-    
+
     brand.brand_name = brand_name;
 
     const updatedBrand = await brand.save();
@@ -106,5 +106,5 @@ module.exports = {
   getBrands,
   getBrandById,
   updateBrand,
-  deleteBrand
+  deleteBrand,
 };

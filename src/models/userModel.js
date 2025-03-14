@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Define the user schema
 const userSchema = new mongoose.Schema(
@@ -8,12 +8,12 @@ const userSchema = new mongoose.Schema(
     first_name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     last_name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     email: {
       type: String,
@@ -21,37 +21,37 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address'],
     },
     password: {
       type: String,
       required: true,
       minlength: 8,
-      select: false 
+      select: false,
     },
     phone_number: {
       type: String,
-      trim: true
+      trim: true,
     },
     role: {
       type: String,
       enum: ['customer', 'admin'],
-      default: 'customer'
+      default: 'customer',
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Address',
-      required: true
-    }
+      required: true,
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 // Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
     return next();
   }
 
@@ -69,7 +69,7 @@ userSchema.methods.comparePassword = async function (passwordToCheck) {
 // Generate JWT token
 userSchema.methods.generateAuthToken = function () {
   if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined in environment variables.");
+    throw new Error('JWT_SECRET is not defined in environment variables.');
   }
 
   return jwt.sign(
@@ -78,14 +78,14 @@ userSchema.methods.generateAuthToken = function () {
       first_name: this.first_name,
       last_name: this.last_name,
       email: this.email,
-      role: this.role.toLowerCase() // Standardize role for security
+      role: this.role.toLowerCase(), // Standardize role for security
     },
     process.env.JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: '1d' },
   );
 };
 
 // Create and export the User model
-const UserModel = mongoose.model("User", userSchema);
+const UserModel = mongoose.model('User', userSchema);
 
 module.exports = UserModel;

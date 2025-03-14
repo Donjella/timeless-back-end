@@ -1,16 +1,16 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
 // Import middleware
-const errorHandler = require("./middleware/errorHandler");
+const errorHandler = require('./middleware/errorHandler');
 
 // Import routes
-const userRoutes = require("./routes/userRoutes"); 
-const watchRoutes = require("./routes/watchRoutes");
-const brandRoutes = require("./routes/brandRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const addressRoutes = require("./routes/addressRoutes");
+const userRoutes = require('./routes/userRoutes');
+const watchRoutes = require('./routes/watchRoutes');
+const brandRoutes = require('./routes/brandRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 
 // Make an instance of an express server
 const app = express();
@@ -20,35 +20,34 @@ app.use(express.json());
 
 // Configure CORS dynamically from environment variables
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:5173"];
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173'];
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
 };
 
 app.use(cors(corsOptions));
 
 // Mount API routes
-app.use("/api/users", userRoutes); 
-app.use("/api/watches", watchRoutes);
-app.use("/api/brands", brandRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/addresses", addressRoutes)
-
+app.use('/api/users', userRoutes);
+app.use('/api/watches', watchRoutes);
+app.use('/api/brands', brandRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/addresses', addressRoutes);
 
 // Base route
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   res.json({
-    message: "Hello There. Welcome to Timeless"
+    message: 'Hello There. Welcome to Timeless',
   });
 });
 

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // Define the address schema
 const addressSchema = new mongoose.Schema(
@@ -6,32 +6,32 @@ const addressSchema = new mongoose.Schema(
     street_address: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     suburb: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     state: {
       type: String,
       required: true,
       trim: true,
-      enum: ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'] // Australian states/territories
+      enum: ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'], // Australian states/territories
     },
     postcode: {
       type: String,
       required: true,
       trim: true,
-      match: [/^\d{4}$/, 'Please provide a valid 4-digit Australian postcode']
-    }
+      match: [/^\d{4}$/, 'Please provide a valid 4-digit Australian postcode'],
+    },
   },
-  { 
-    timestamps: true 
-  }
+  {
+    timestamps: true,
+  },
 );
 
 // Create and export the Address model
-const AddressModel = mongoose.model("Address", addressSchema);
+const AddressModel = mongoose.model('Address', addressSchema);
 
 module.exports = AddressModel;

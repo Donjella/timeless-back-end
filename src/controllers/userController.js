@@ -1,7 +1,7 @@
-const User = require("../models/userModel");
-const Address = require("../models/addressModel");
-const { validationResult } = require("express-validator");
-const asyncHandler = require("express-async-handler");
+const { validationResult } = require('express-validator');
+const asyncHandler = require('express-async-handler');
+const User = require('../models/userModel');
+const Address = require('../models/addressModel');
 
 // @desc    Register a new user with required address
 // @route   POST /api/users/register
@@ -12,35 +12,41 @@ const registerUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { first_name, last_name, email, password, phone_number, street_address, suburb, state, postcode } = req.body;
+  const {
+    first_name, last_name, email, password, phone_number, street_address, suburb, state, postcode,
+  } = req.body;
 
   // Check for missing required fields
   const missingFields = [];
-  if (!first_name) missingFields.push("first name");
-  if (!last_name) missingFields.push("last name");
-  if (!email) missingFields.push("email");
-  if (!password) missingFields.push("password");
-  if (!street_address) missingFields.push("street address");
-  if (!suburb) missingFields.push("suburb");
-  if (!state) missingFields.push("state");
-  if (!postcode) missingFields.push("postcode");
+  if (!first_name) missingFields.push('first name');
+  if (!last_name) missingFields.push('last name');
+  if (!email) missingFields.push('email');
+  if (!password) missingFields.push('password');
+  if (!street_address) missingFields.push('street address');
+  if (!suburb) missingFields.push('suburb');
+  if (!state) missingFields.push('state');
+  if (!postcode) missingFields.push('postcode');
 
   if (missingFields.length > 0) {
-    return res.status(400).json({ message: `All fields are required. Please enter: ${missingFields.join(", ")}` });
+    return res.status(400).json({ message: `All fields are required. Please enter: ${missingFields.join(', ')}` });
   }
 
   // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
-    return res.status(409).json({ message: "User already exists" });
+    return res.status(409).json({ message: 'User already exists' });
   }
 
   try {
     // Create the address first
-    const address = await Address.create({ street_address, suburb, state, postcode });
+    const address = await Address.create({
+      street_address, suburb, state, postcode,
+    });
 
     // Create user with reference to the address
-    const user = await User.create({ first_name, last_name, email, password, phone_number, address: address._id });
+    const user = await User.create({
+      first_name, last_name, email, password, phone_number, address: address._id,
+    });
 
     return res.status(201).json({
       _id: user._id,
@@ -59,8 +65,8 @@ const registerUser = asyncHandler(async (req, res) => {
       token: user.generateAuthToken(),
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    return res.status(500).json({ message: "Registration failed", error: error.message });
+    console.error('Registration error:', error);
+    return res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 });
 
@@ -71,16 +77,16 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Find user and populate address
-  const user = await User.findOne({ email }).select("+password").populate("address");
+  const user = await User.findOne({ email }).select('+password').populate('address');
 
   if (!user) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    return res.status(401).json({ message: 'Invalid email or password' });
   }
 
   // Check password match
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    return res.status(401).json({ message: 'Invalid email or password' });
   }
 
   // Successful login
@@ -109,12 +115,11 @@ const getUsers = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).populate('address').select('-password');
-  
+
   if (user) {
     return res.json(user);
-  } else {
-    return res.status(404).json({ message: "User not found" });
   }
+  return res.status(404).json({ message: 'User not found' });
 });
 
 // @desc    Get user profile
@@ -122,10 +127,10 @@ const getUserById = asyncHandler(async (req, res) => {
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
   // Find user and populate address
-  const user = await User.findById(req.user._id).populate("address");
+  const user = await User.findById(req.user._id).populate('address');
 
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: 'User not found' });
   }
 
   return res.json({
@@ -146,7 +151,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: 'User not found' });
   }
 
   // Update user fields if provided
@@ -181,7 +186,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 
     const updatedUser = await user.save();
-    const populatedUser = await User.findById(updatedUser._id).populate("address");
+    const populatedUser = await User.findById(updatedUser._id).populate('address');
 
     return res.json({
       _id: populatedUser._id,
@@ -193,10 +198,9 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       address: populatedUser.address,
       token: populatedUser.generateAuthToken(),
     });
-
   } catch (error) {
-    console.error("Profile update error:", error);
-    return res.status(500).json({ message: "Profile update failed", error: error.message });
+    console.error('Profile update error:', error);
+    return res.status(500).json({ message: 'Profile update failed', error: error.message });
   }
 });
 
@@ -206,24 +210,24 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
 
-  if (!["customer", "admin"].includes(role)) {
-    return res.status(400).json({ message: "Invalid role specified" });
+  if (!['customer', 'admin'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role specified' });
   }
 
   const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     { role },
-    { new: true, runValidators: true } 
+    { new: true, runValidators: true },
   );
 
   if (!updatedUser) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: 'User not found' });
   }
 
   return res.json({
     _id: updatedUser._id,
     role: updatedUser.role,
-    message: `User role updated to ${updatedUser.role}`
+    message: `User role updated to ${updatedUser.role}`,
   });
 });
 
@@ -234,5 +238,5 @@ module.exports = {
   updateUserProfile,
   updateUserRole,
   getUsers,
-  getUserById
+  getUserById,
 };
