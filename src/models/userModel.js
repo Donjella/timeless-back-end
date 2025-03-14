@@ -18,13 +18,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
     password: {
       type: String,
       required: true,
       minlength: 8,
-      select: false,
+      select: false, // Prevent password from being returned in queries
     },
     phone_number: {
       type: String,
@@ -33,7 +34,12 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
+      enum: ['user', 'admin'], // Define allowed roles
       default: 'user',
+    },
+    address: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Address', // References the Address model
     },
   },
   {
@@ -52,12 +58,12 @@ userSchema.pre('save', async function hashPassword(next) {
   next();
 });
 
-// Method for matching entered password to hashed password
+// Method to compare entered password with stored hashed password
 userSchema.methods.matchPassword = async function matchPassword(enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT Token method (named function)
+// Generate JWT Token
 userSchema.methods.generateToken = function generateToken() {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined.');
@@ -76,4 +82,6 @@ userSchema.methods.generateToken = function generateToken() {
   );
 };
 
-module.exports = mongoose.model('User', userSchema);
+// Create and export User model
+const UserModel = mongoose.model('User', userSchema);
+module.exports = UserModel;

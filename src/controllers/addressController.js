@@ -6,21 +6,16 @@ const Address = require('../models/addressModel');
 // @access  Private (User)
 const createAddress = asyncHandler(async (req, res) => {
   const {
-    street, city, state, postal_code, country,
+    street_address, suburb, state, postcode,
   } = req.body;
 
-  if (!street || !city || !state || !postal_code || !country) {
+  if (!street_address || !suburb || !state || !postcode) {
     res.status(400);
     throw new Error('All fields are required');
   }
 
   const address = await Address.create({
-    user: req.user.id, // Associate address with the logged-in user
-    street,
-    city,
-    state,
-    postal_code,
-    country,
+    street_address, suburb, state, postcode,
   });
 
   res.status(201).json(address);
@@ -30,7 +25,12 @@ const createAddress = asyncHandler(async (req, res) => {
 // @route   GET /api/addresses
 // @access  Private (Admin)
 const getAddresses = asyncHandler(async (req, res) => {
-  const addresses = await Address.find().populate('user', 'name email');
+  if (req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Access denied. Admin only.');
+  }
+
+  const addresses = await Address.find();
   res.json(addresses);
 });
 
@@ -38,7 +38,7 @@ const getAddresses = asyncHandler(async (req, res) => {
 // @route   GET /api/addresses/:id
 // @access  Private (User)
 const getAddressById = asyncHandler(async (req, res) => {
-  const address = await Address.findById(req.params.id).populate('user', 'name email');
+  const address = await Address.findById(req.params.id);
 
   if (!address) {
     res.status(404);
@@ -48,47 +48,44 @@ const getAddressById = asyncHandler(async (req, res) => {
   res.json(address);
 });
 
-// @desc    Update an address
+// @desc    Update an address (Admin only)
 // @route   PATCH /api/addresses/:id
-// @access  Private (User)
+// @access  Private (Admin)
 const updateAddress = asyncHandler(async (req, res) => {
-  const address = await Address.findById(req.params.id);
+  if (req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Access denied. Admin only.');
+  }
 
+  const address = await Address.findById(req.params.id);
   if (!address) {
     res.status(404);
     throw new Error('Address not found');
   }
 
-  if (address.user.toString() !== req.user.id && req.user.role !== 'admin') {
-    res.status(401);
-    throw new Error('Not authorized to update this address');
-  }
-
-  const updatedFields = req.body;
-  Object.assign(address, updatedFields);
+  Object.assign(address, req.body);
   await address.save();
 
   res.json(address);
 });
 
-// @desc    Delete an address
+// @desc    Delete an address (Admin only)
 // @route   DELETE /api/addresses/:id
-// @access  Private (User)
+// @access  Private (Admin)
 const deleteAddress = asyncHandler(async (req, res) => {
-  const address = await Address.findById(req.params.id);
+  if (req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Access denied. Admin only.');
+  }
 
+  const address = await Address.findById(req.params.id);
   if (!address) {
     res.status(404);
     throw new Error('Address not found');
   }
 
-  if (address.user.toString() !== req.user.id && req.user.role !== 'admin') {
-    res.status(401);
-    throw new Error('Not authorized to delete this address');
-  }
-
   await address.deleteOne();
-  res.json({ message: 'Address deleted' });
+  res.json({ message: 'Address deleted successfully' });
 });
 
 module.exports = {
