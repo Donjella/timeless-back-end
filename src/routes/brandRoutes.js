@@ -10,11 +10,11 @@ const {
 } = require('../controllers/brandController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-// Public routes
+// Public Routes
 router.get('/', getBrands);
 router.get('/:id', getBrandById);
 
-// Protected routes (Admin only)
+// Admin Only Routes (Requires Admin Role)
 router.post('/', protect, admin, createBrand);
 router.put('/:id', protect, admin, updateBrand);
 router.delete('/:id', protect, admin, deleteBrand);

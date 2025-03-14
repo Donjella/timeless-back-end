@@ -13,7 +13,6 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const rentalRoutes = require('./routes/rentalRoutes');
 
-
 // Make an instance of an express server
 const app = express();
 

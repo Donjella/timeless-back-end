@@ -10,11 +10,11 @@ const {
 } = require('../controllers/watchController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-// Public routes
+// Public Routes
 router.get('/', getWatches);
 router.get('/:id', getWatchById);
 
-// Protected routes (Admin only)
+// Admin Only Routes (Requires Admin Role)
 router.post('/', protect, admin, createWatch);
 router.put('/:id', protect, admin, updateWatch);
 router.delete('/:id', protect, admin, deleteWatch);
