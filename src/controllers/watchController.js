@@ -11,42 +11,38 @@ const validConditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
 // @route   POST /api/watches
 // @access  Private (Admin)
 const createWatch = asyncHandler(async (req, res) => {
-  try {
-    const {
-      model, year, rental_day_price, condition, quantity, brand_id,
-    } = req.body;
+  const {
+    model, year, rental_day_price, condition, quantity, brand_id,
+  } = req.body;
 
-    if (!model || !year || !rental_day_price || !condition || !quantity || !brand_id) {
-      res.status(400);
-      throw new Error('All fields are required');
-    }
+  if (!model || !year || !rental_day_price || !condition || !quantity || !brand_id) {
+    res.status(400);
+    throw new Error('All fields are required');
+  }
 
-    // Convert condition to title case
-    const formattedCondition = titleCase(condition);
+  // Convert condition to title case
+  const formattedCondition = titleCase(condition);
 
-    // Validate condition
-    if (!validConditions.includes(formattedCondition)) {
-      res.status(400);
-      throw new Error(`Invalid condition: '${condition}'. Valid options are: ${validConditions.join(', ')}`);
-    }
+  // Validate condition
+  if (!validConditions.includes(formattedCondition)) {
+    res.status(400);
+    throw new Error(`Invalid condition: '${condition}'. Valid options are: ${validConditions.join(', ')}`);
+  }
 
-    const watch = await Watch.create({
-      model,
-      year,
-      rental_day_price,
-      condition: formattedCondition,
-      quantity,
-      brand: brand_id,
-    });
+  const watch = await Watch.create({
+    model,
+    year,
+    rental_day_price,
+    condition: formattedCondition,
+    quantity,
+    brand: brand_id,
+  });
 
-    if (watch) {
-      res.status(201).json(watch);
-    } else {
-      res.status(400);
-      throw new Error('Invalid watch data');
-    }
-  } catch (error) {
-    throw error;
+  if (watch) {
+    res.status(201).json(watch);
+  } else {
+    res.status(400);
+    throw new Error('Invalid watch data');
   }
 });
 
@@ -88,7 +84,9 @@ const updateWatch = asyncHandler(async (req, res) => {
 
       if (!validConditions.includes(formattedCondition)) {
         res.status(400);
-        throw new Error(`Invalid condition: '${req.body.condition}'. Valid options are: ${validConditions.join(', ')}`);
+        throw new Error(
+          `Invalid condition: '${req.body.condition}'. Valid options are: ${validConditions.join(', ')}`,
+        );
       }
 
       watch.condition = formattedCondition;
