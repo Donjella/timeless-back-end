@@ -1,4 +1,4 @@
-const Watch = require('../models/watchModel');
+const Watch = require('../models/watchModel')
 const asyncHandler = require('express-async-handler');
 
 // Function to convert string to title case
