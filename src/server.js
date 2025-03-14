@@ -11,6 +11,8 @@ const watchRoutes = require('./routes/watchRoutes');
 const brandRoutes = require('./routes/brandRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const addressRoutes = require('./routes/addressRoutes');
+const rentalRoutes = require('./routes/rentalRoutes');
+
 
 // Make an instance of an express server
 const app = express();
@@ -43,6 +45,7 @@ app.use('/api/watches', watchRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/rentals', rentalRoutes);
 
 // Base route
 app.get('/', (req, res) => {
