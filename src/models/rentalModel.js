@@ -53,7 +53,7 @@ const rentalSchema = new mongoose.Schema(
 );
 
 // Calculate rental duration in days
-rentalSchema.methods.getRentalDuration = function () {
+rentalSchema.methods.getRentalDuration = function calculateDurationInDays() {
   if (!this.rental_start_date || !this.rental_end_date) return 0;
 
   const startDate = new Date(this.rental_start_date);
