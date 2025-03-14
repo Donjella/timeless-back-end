@@ -58,21 +58,23 @@ const getPaymentById = asyncHandler(async (req, res) => {
 });
 
 // @desc    Update payment status
-// @route   PUT /api/payments/:id
+// @route   PATCH /api/payments/:id
 // @access  Private (Admin)
 const updatePaymentStatus = asyncHandler(async (req, res) => {
-  const payment = await Payment.findById(req.params.id);
-
-  if (payment) {
+    const payment = await Payment.findById(req.params.id);
+  
+    if (!payment) {
+      res.status(404);
+      throw new Error("Payment not found");
+    }
+  
+    // Update only the status
     payment.payment_status = req.body.payment_status || payment.payment_status;
-
+  
     const updatedPayment = await payment.save();
     res.json(updatedPayment);
-  } else {
-    res.status(404);
-    throw new Error("Payment not found");
-  }
-});
+  });
+  
 
 // @desc    Delete a payment
 // @route   DELETE /api/payments/:id
