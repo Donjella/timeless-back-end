@@ -100,6 +100,20 @@ const getUsers = asyncHandler(async (req, res) => {
   res.json(users);
 });
 
+// @desc    Get user by ID (Admin only)
+// @route   GET /api/users/:id
+// @access  Private/Admin
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).populate('address');
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  res.json(user);
+});
+
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
@@ -184,6 +198,7 @@ module.exports = {
   registerUser,
   loginUser,
   getUsers,
+  getUserById,
   getUserProfile,
   updateUserProfile,
   updateUserRole,
