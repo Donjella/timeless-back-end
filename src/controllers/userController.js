@@ -13,10 +13,10 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const {
-    first_name, last_name, email, password, phone_number, street_address, suburb, state, postcode,
+    first_name, last_name, email, password, phone_number,
+    street_address, suburb, state, postcode,
   } = req.body;
 
-  // Check for missing required fields
   const missingFields = [];
   if (!first_name) missingFields.push('first name');
   if (!last_name) missingFields.push('last name');
@@ -28,24 +28,28 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!postcode) missingFields.push('postcode');
 
   if (missingFields.length > 0) {
-    return res.status(400).json({ message: `All fields are required. Please enter: ${missingFields.join(', ')}` });
+    return res.status(400).json({
+      message: `All fields are required. Please enter: ${missingFields.join(', ')}`,
+    });
   }
 
-  // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     return res.status(409).json({ message: 'User already exists' });
   }
 
   try {
-    // Create the address first
     const address = await Address.create({
       street_address, suburb, state, postcode,
     });
 
-    // Create user with reference to the address
     const user = await User.create({
-      first_name, last_name, email, password, phone_number, address: address._id,
+      first_name,
+      last_name,
+      email,
+      password,
+      phone_number,
+      address: address._id,
     });
 
     return res.status(201).json({
@@ -76,20 +80,12 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Find user and populate address
   const user = await User.findOne({ email }).select('+password').populate('address');
 
-  if (!user) {
+  if (!user || !(await user.comparePassword(password))) {
     return res.status(401).json({ message: 'Invalid email or password' });
   }
 
-  // Check password match
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) {
-    return res.status(401).json({ message: 'Invalid email or password' });
-  }
-
-  // Successful login
   return res.json({
     _id: user._id,
     first_name: user.first_name,
@@ -126,7 +122,6 @@ const getUserById = asyncHandler(async (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = asyncHandler(async (req, res) => {
-  // Find user and populate address
   const user = await User.findById(req.user._id).populate('address');
 
   if (!user) {
@@ -154,27 +149,23 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'User not found' });
   }
 
-  // Update user fields if provided
   if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
   if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
   if (req.body.email !== undefined) user.email = req.body.email;
   if (req.body.phone_number !== undefined) user.phone_number = req.body.phone_number;
-  if (req.body.password !== undefined) user.password = req.body.password; // Password will be hashed in pre-save hook
+  if (req.body.password !== undefined) user.password = req.body.password;
 
   try {
-    // Handle address updates (only if provided)
     if (req.body.street_address || req.body.suburb || req.body.state || req.body.postcode) {
       let address = await Address.findById(user.address);
 
       if (address) {
-        // Update existing address fields if provided
         if (req.body.street_address !== undefined) address.street_address = req.body.street_address;
         if (req.body.suburb !== undefined) address.suburb = req.body.suburb;
         if (req.body.state !== undefined) address.state = req.body.state;
         if (req.body.postcode !== undefined) address.postcode = req.body.postcode;
         await address.save();
       } else {
-        // If no existing address, create a new one
         address = await Address.create({
           street_address: req.body.street_address,
           suburb: req.body.suburb,
@@ -217,7 +208,10 @@ const updateUserRole = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     { role },
-    { new: true, runValidators: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   );
 
   if (!updatedUser) {
