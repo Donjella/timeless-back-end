@@ -197,5 +197,5 @@ describe('Role-Based Access Control', () => {
   });
 });
 
-module.exports = testUser 
-// for dry principles export testUser to be used in different tests, can be changed as need after import
+module.exports = testUser;
+// Used for DRY principles, export testUser to be reused in different tests
