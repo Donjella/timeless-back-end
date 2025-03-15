@@ -1,14 +1,14 @@
 const { AppError } = require('../utils/errors');
 
 const errorHandler = (err, req, res, next) => {
-  console.error('ERROR:', err);
+  console.error('ERROR:', err.message);
 
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message || 'Internal Server Error';
 
   // Handle custom AppError classes
   if (err instanceof AppError) {
-    statusCode = err.statusCode;
+    statusCode = err.statusCode || 500;
     message = err.message;
   }
 
@@ -39,7 +39,7 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
   });
 };
 
