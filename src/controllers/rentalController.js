@@ -1,52 +1,60 @@
 const asyncHandler = require('express-async-handler');
 const Rental = require('../models/rentalModel');
 const Watch = require('../models/watchModel');
-const {
-  NotFoundError,
-  ValidationError,
-  ForbiddenError,
-} = require('../utils/errors');
+const { NotFoundError, ValidationError, ForbiddenError } = require('../utils/errors');
 
 // @desc    Create a new rental
 // @route   POST /api/rentals
 // @access  Private (User)
 const createRental = asyncHandler(async (req, res, next) => {
   try {
-    const { watch_id, rental_days } = req.body;
+    let { watch_id, rental_days } = req.body;
 
-    // Identify missing fields
+    // Identify missing fields dynamically
     const missingFields = [];
-    if (!watch_id) missingFields.push('watch_id');
-    if (!rental_days) missingFields.push('rental_days');
+    if (watch_id === undefined) missingFields.push('watch_id');
+    if (rental_days === undefined) missingFields.push('rental_days');
 
     if (missingFields.length > 0) {
       throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
     }
 
-    // Ensure the watch exists
+    rental_days = Number(rental_days); // Ensure it's a number
+
+    // Validate rental duration
+    if (rental_days <= 0) {
+      throw new ValidationError('Rental duration must be at least 1 day.');
+    }
+
+    // Check if watch exists
     const watch = await Watch.findById(watch_id);
     if (!watch) {
       throw new NotFoundError('Watch not found');
     }
 
-    // Ensure watch is available
+    // Check watch availability
     if (watch.quantity < 1) {
       throw new ValidationError('Watch is out of stock');
     }
 
-    // Calculate total rental price
-    const total_price = watch.rental_day_price * rental_days;
+    // Calculate rental dates and total price
+    const total_rental_price = watch.rental_day_price * rental_days;
+    const rental_start_date = new Date();
+    const rental_end_date = new Date();
+    rental_end_date.setDate(rental_start_date.getDate() + rental_days);
 
-    // Create new rental
+    // Create rental
     const rental = await Rental.create({
-      user: req.user._id, // Associate rental with logged-in user
+      user: req.user._id,
       watch: watch_id,
       rental_days,
-      total_price,
+      total_rental_price,
+      rental_start_date,
+      rental_end_date,
       rental_status: 'Pending',
     });
 
-    // Reduce available watch quantity
+    // Reduce watch quantity
     watch.quantity -= 1;
     await watch.save();
 

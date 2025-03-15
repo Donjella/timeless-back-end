@@ -214,6 +214,35 @@ const updateUserRole = asyncHandler(
   },
 );
 
+// @desc    Delete user by ID (Admin only)
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+const deleteUser = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
+    }
+
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Optional: Delete associated address
+    if (user.address) {
+      await Address.findByIdAndDelete(user.address);
+    }
+
+    res.status(200).json({
+      message: 'User successfully deleted',
+      deletedUserId: user._id,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -222,4 +251,5 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   updateUserRole,
+  deleteUser,
 };

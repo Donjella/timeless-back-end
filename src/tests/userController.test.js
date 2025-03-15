@@ -68,8 +68,6 @@ describe('Authentication & Authorization', () => {
     // Register a regular user
     const userRes = await request(app).post('/api/users/register').send(testUser);
     userToken = userRes.body.token;
-
-    // Note: We removed the unused adminToken and userId declarations
   });
 
   it('Should register a new user and return a token', async () => {
@@ -194,6 +192,88 @@ describe('Role-Based Access Control', () => {
 
     expect(res.statusCode).toBe(403);
     expect(res.body.message).toMatch(/Not authorized as admin/);
+  });
+
+  // New tests for Get User by ID and User Deletion
+  describe('Get User by ID (Admin Only)', () => {
+    it('Should allow admin to get user by ID', async () => {
+      const res = await request(app)
+        .get(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body._id).toBe(userId);
+      expect(res.body).toHaveProperty('email');
+    });
+
+    it('Should prevent non-admin from getting user by ID', async () => {
+      const res = await request(app)
+        .get(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.message).toMatch(/Not authorized as admin/);
+    });
+
+    it('Should return 404 for non-existent user ID', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+
+      const res = await request(app)
+        .get(`/api/users/${nonExistentId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toMatch(/User not found/);
+    });
+  });
+
+  describe('Delete User (Admin Only)', () => {
+    it('Should allow admin to delete a user', async () => {
+      // Create a user to be deleted
+      const userToDeleteRes = await request(app)
+        .post('/api/users/register')
+        .send({
+          ...testUser,
+          email: 'delete@example.com',
+        });
+      const userToDeleteId = userToDeleteRes.body._id;
+
+      const res = await request(app)
+        .delete(`/api/users/${userToDeleteId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toMatch(/User successfully deleted/);
+      expect(res.body.deletedUserId).toBe(userToDeleteId);
+
+      // Verify user is actually deleted from database
+      const deletedUser = await User.findById(userToDeleteId);
+      expect(deletedUser).toBeNull();
+    });
+
+    it('Should prevent non-admin from deleting a user', async () => {
+      const res = await request(app)
+        .delete(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.message).toMatch(/Not authorized as admin/);
+
+      // Verify user still exists in database
+      const user = await User.findById(userId);
+      expect(user).not.toBeNull();
+    });
+
+    it('Should return 404 when trying to delete a non-existent user', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+
+      const res = await request(app)
+        .delete(`/api/users/${nonExistentId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toMatch(/User not found/);
+    });
   });
 });
 

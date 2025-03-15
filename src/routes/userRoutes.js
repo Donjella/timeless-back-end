@@ -9,6 +9,7 @@ const {
   updateUserRole,
   getUsers,
   getUserById,
+  deleteUser, // New function
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -24,5 +25,6 @@ router.patch('/profile', protect, updateUserProfile);
 router.get('/', protect, admin, getUsers); // Admin can get all users
 router.get('/:id', protect, admin, getUserById); // Admin can get user by ID
 router.patch('/role/:id', protect, admin, updateUserRole); // Admin can update user role
+router.delete('/:id', protect, admin, deleteUser); // Admin can delete users
 
 module.exports = router;

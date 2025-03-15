@@ -1,12 +1,9 @@
 const { AppError } = require('../utils/errors');
 
 const errorHandler = (err, req, res, next) => {
-  console.error('ERROR:', err.message);
-
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message || 'Internal Server Error';
 
-  // Handle custom AppError classes
   if (err instanceof AppError) {
     statusCode = err.statusCode || 500;
     message = err.message;
@@ -25,12 +22,6 @@ const errorHandler = (err, req, res, next) => {
     case 'TokenExpiredError':
       statusCode = 401;
       message = 'Invalid or expired token, please log in again';
-      break;
-    case 'MongoServerError':
-      if (err.code === 11000) {
-        statusCode = 409;
-        message = 'Duplicate value error';
-      }
       break;
     default:
       break;
