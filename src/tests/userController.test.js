@@ -48,7 +48,7 @@ describe('Input Validation & Error Handling', () => {
   it('Should not log in with incorrect password', async () => {
     // Register a user first
     await request(app).post('/api/users/register').send(testUser);
-    
+
     const res = await request(app)
       .post('/api/users/login')
       .send({ email: testUser.email, password: 'oopsWrongPassword' });
@@ -62,21 +62,14 @@ describe('Input Validation & Error Handling', () => {
  * Authentication & Authorization Tests
  */
 describe('Authentication & Authorization', () => {
-  let userToken, adminToken, userId;
+  let userToken;
 
   beforeEach(async () => {
     // Register a regular user
     const userRes = await request(app).post('/api/users/register').send(testUser);
     userToken = userRes.body.token;
-    userId = userRes.body._id;
-    
-    // Register an admin user
-    const adminRes = await request(app).post('/api/users/register').send({
-      ...testUser,
-      email: 'admin@example.com',
-      role: 'admin',
-    });
-    adminToken = adminRes.body.token;
+
+    // Note: We removed the unused adminToken and userId declarations
   });
 
   it('Should register a new user and return a token', async () => {
@@ -142,23 +135,25 @@ describe('Database Interaction', () => {
  * Role-Based Access Control Tests
  */
 describe('Role-Based Access Control', () => {
-  let adminToken, userToken, userId;
+  let adminToken;
+  let userToken;
+  let userId;
 
   beforeEach(async () => {
     // Register a normal user through API
     const userRes = await request(app).post('/api/users/register').send(testUser);
     userToken = userRes.body.token;
     userId = userRes.body._id;
-    
+
     // Create admin user directly in database
     const adminUser = new User({
       ...testUser,
       email: 'admin@example.com',
       role: 'admin',
-      password: 'CorrectPW'  // Need to set password directly since we're bypassing registration
+      password: 'CorrectPW', // Need to set password directly since we're bypassing registration
     });
     await adminUser.save();
-    
+
     // Get admin token by generating it directly
     adminToken = adminUser.generateToken();
   });
