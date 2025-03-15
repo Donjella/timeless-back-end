@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Import middleware
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');

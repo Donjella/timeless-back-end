@@ -1,119 +1,155 @@
 const asyncHandler = require('express-async-handler');
 const Rental = require('../models/rentalModel');
 const Watch = require('../models/watchModel');
+const {
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+} = require('../utils/errors');
 
 // @desc    Create a new rental
 // @route   POST /api/rentals
 // @access  Private (User)
-const createRental = asyncHandler(async (req, res) => {
-  const { watch_id, rental_days } = req.body;
+const createRental = asyncHandler(async (req, res, next) => {
+  try {
+    const { watch_id, rental_days } = req.body;
 
-  if (!watch_id || !rental_days) {
-    res.status(400);
-    throw new Error('All fields are required');
+    // Identify missing fields
+    const missingFields = [];
+    if (!watch_id) missingFields.push('watch_id');
+    if (!rental_days) missingFields.push('rental_days');
+
+    if (missingFields.length > 0) {
+      throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Ensure the watch exists
+    const watch = await Watch.findById(watch_id);
+    if (!watch) {
+      throw new NotFoundError('Watch not found');
+    }
+
+    // Ensure watch is available
+    if (watch.quantity < 1) {
+      throw new ValidationError('Watch is out of stock');
+    }
+
+    // Calculate total rental price
+    const total_price = watch.rental_day_price * rental_days;
+
+    // Create new rental
+    const rental = await Rental.create({
+      user: req.user._id, // Associate rental with logged-in user
+      watch: watch_id,
+      rental_days,
+      total_price,
+      rental_status: 'Pending',
+    });
+
+    // Reduce available watch quantity
+    watch.quantity -= 1;
+    await watch.save();
+
+    res.status(201).json(rental);
+  } catch (error) {
+    next(error);
   }
-
-  // Ensure the watch exists
-  const watch = await Watch.findById(watch_id);
-  if (!watch) {
-    res.status(404);
-    throw new Error('Watch not found');
-  }
-
-  // Ensure watch is available
-  if (watch.quantity < 1) {
-    res.status(400);
-    throw new Error('Watch is out of stock');
-  }
-
-  // Calculate total rental price
-  const total_price = watch.rental_day_price * rental_days;
-
-  // Create new rental
-  const rental = await Rental.create({
-    user: req.user.id, // Associate rental with logged-in user
-    watch: watch_id,
-    rental_days,
-    total_price,
-    rental_status: 'Pending',
-  });
-
-  // Reduce available watch quantity
-  watch.quantity -= 1;
-  await watch.save();
-
-  res.status(201).json(rental);
 });
 
 // @desc    Get all rentals (Admin only)
 // @route   GET /api/rentals
 // @access  Private (Admin)
-const getRentals = asyncHandler(async (req, res) => {
-  const rentals = await Rental.find()
-    .populate('user', 'first_name last_name email')
-    .populate('watch', 'model year brand');
-  res.json(rentals);
+const getRentals = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
+    }
+
+    const rentals = await Rental.find()
+      .populate('user', 'first_name last_name email')
+      .populate('watch', 'model year brand');
+
+    res.json(rentals);
+  } catch (error) {
+    next(error);
+  }
 });
 
 // @desc    Get rental by ID
 // @route   GET /api/rentals/:id
 // @access  Private (User/Admin)
-const getRentalById = asyncHandler(async (req, res) => {
-  const rental = await Rental.findById(req.params.id)
-    .populate('user', 'first_name last_name email')
-    .populate('watch', 'model year brand');
+const getRentalById = asyncHandler(async (req, res, next) => {
+  try {
+    const rental = await Rental.findById(req.params.id)
+      .populate('user', 'first_name last_name email')
+      .populate('watch', 'model year brand');
 
-  if (!rental) {
-    res.status(404);
-    throw new Error('Rental not found');
+    if (!rental) {
+      throw new NotFoundError('Rental not found');
+    }
+
+    // Ensure user owns the rental or is an admin
+    if (rental.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      throw new ForbiddenError('Not authorized to view this rental');
+    }
+
+    res.json(rental);
+  } catch (error) {
+    next(error);
   }
-
-  // Ensure user owns the rental or is an admin
-  if (rental.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
-    res.status(403);
-    throw new Error('Not authorized to view this rental');
-  }
-
-  res.json(rental);
 });
 
 // @desc    Update rental status
 // @route   PATCH /api/rentals/:id
 // @access  Private (Admin)
-const updateRentalStatus = asyncHandler(async (req, res) => {
-  const rental = await Rental.findById(req.params.id);
+const updateRentalStatus = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
+    }
 
-  if (!rental) {
-    res.status(404);
-    throw new Error('Rental not found');
+    const rental = await Rental.findById(req.params.id);
+
+    if (!rental) {
+      throw new NotFoundError('Rental not found');
+    }
+
+    rental.rental_status = req.body.rental_status || rental.rental_status;
+    const updatedRental = await rental.save();
+
+    res.json(updatedRental);
+  } catch (error) {
+    next(error);
   }
-
-  rental.rental_status = req.body.rental_status || rental.rental_status;
-  const updatedRental = await rental.save();
-
-  res.json(updatedRental);
 });
 
 // @desc    Delete a rental (Admin only)
 // @route   DELETE /api/rentals/:id
 // @access  Private (Admin)
-const deleteRental = asyncHandler(async (req, res) => {
-  const rental = await Rental.findById(req.params.id);
+const deleteRental = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
+    }
 
-  if (!rental) {
-    res.status(404);
-    throw new Error('Rental not found');
+    const rental = await Rental.findById(req.params.id);
+
+    if (!rental) {
+      throw new NotFoundError('Rental not found');
+    }
+
+    // Restore watch quantity before deleting rental
+    const watch = await Watch.findById(rental.watch);
+    if (watch) {
+      watch.quantity += 1;
+      await watch.save();
+    }
+
+    await rental.deleteOne();
+    res.json({ message: 'Rental deleted successfully' });
+  } catch (error) {
+    next(error);
   }
-
-  // Restore watch quantity before deleting rental
-  const watch = await Watch.findById(rental.watch);
-  if (watch) {
-    watch.quantity += 1;
-    await watch.save();
-  }
-
-  await rental.deleteOne();
-  res.json({ message: 'Rental deleted successfully' });
 });
 
 module.exports = {
