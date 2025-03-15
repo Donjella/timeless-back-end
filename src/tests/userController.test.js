@@ -201,3 +201,6 @@ describe('Role-Based Access Control', () => {
     expect(res.body.message).toMatch(/Not authorized as admin/);
   });
 });
+
+module.exports = testUser 
+// for dry principles export testUser to be used in different tests, can be changed as need after import
