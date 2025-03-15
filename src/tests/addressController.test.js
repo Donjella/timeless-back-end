@@ -156,18 +156,17 @@ describe('Authentication & Authorization', () => {
  */
 describe('Database Interaction', () => {
   let userToken;
-  let addressId;
 
   beforeEach(async () => {
     // Register a user
     const userRes = await request(app).post('/api/users/register').send(testUser);
     userToken = userRes.body.token;
-    // Create an address
-    const addressRes = await request(app)
+
+    // Create an address (not saving the ID since we don't use it)
+    await request(app)
       .post('/api/addresses')
       .set('Authorization', `Bearer ${userToken}`)
       .send(testAddress);
-    addressId = addressRes.body._id;
   });
 
   it('Should create a new address in the database', async () => {
