@@ -40,7 +40,7 @@ To ensure this project meets industry standards, we have carefully selected tech
 The backend is built using **Node.js**, a **non-blocking, event-driven runtime**, and **Express.js**, a lightweight web framework that simplifies API development.
 
 - **Industry Relevance**: 
-  - Used by major companies like **Netflix, LinkedIn, and PayPal**
+  - Used by major companies like Netflix, LinkedIn, and PayPal.
   - Widely adopted for building scalable web services
   - Strong community support with regular updates and security patches
 
@@ -51,18 +51,18 @@ The backend is built using **Node.js**, a **non-blocking, event-driven runtime**
 
 - **Alternatives Comparison**:
   - **Django (Python):** Great for rapid development with built-in admin panel, but its synchronous nature makes it less efficient for high-concurrency applications
-  - **Spring Boot (Java):** Excellent for large-scale enterprise applications but has a **steeper learning curve** and requires more configuration
-  - **ASP.NET (C#):** Highly scalable and secure, but **tightly integrated with the Microsoft ecosystem**, making it less flexible for open-source projects
+  - **Spring Boot (Java):** Excellent for large-scale enterprise applications but has a steeper learning curve and requires more configuration
+  - **ASP.NET (C#):** Highly scalable and secure, but tightly integrated with the Microsoft ecosystem, making it less flexible for open-source projects
 
 - **Licensing**:
   - **Node.js**: MIT License - Permits commercial and private use, modification, and distribution with minimal restrictions
   - **Express.js**: MIT License - Same permissions and conditions as Node.js, fully compatible with commercial projects
 
 ### Database: MongoDB & Mongoose
-**MongoDB**, a NoSQL database, is used to store data for **users, rentals, payments, brands, and watches**. **Mongoose** provides an Object Data Modeling (ODM) layer for structured interaction with MongoDB.
+**MongoDB**, a NoSQL database, is used to store data for **users, rentals, payments, brands, and watches**. **Mongoose** provides an Object Data Modeling (ODM) layer for structured interaction with MongoDD.
 
 - **Industry Relevance**:
-  - Used by companies like **Uber, eBay, and Electronic Arts**
+  - Used by companies like Uber, eBay, and Electronic Arts
   - Ideal for applications requiring rapid development and flexible data models
   - Excellent for handling JSON-like data structures
 
@@ -74,7 +74,7 @@ The backend is built using **Node.js**, a **non-blocking, event-driven runtime**
 - **Alternatives Comparison**:
   - **PostgreSQL:** Highly structured and ensures data integrity, but schema modifications can be complex for rapidly evolving applications
   - **MySQL:** Great for structured data but lacks MongoDB's flexibility in handling JSON-like documents
-  - **Firebase:** Easy to use but provides **less control over querying and indexing** compared to MongoDB
+  - **Firebase:** Easy to use but provides less control over querying and indexing compared to MongoDB
 
 - **Licensing**:
   - **MongoDB**: Server Side Public License (SSPL) - Free for most use cases including local development and standard production deployment; requires source code disclosure if offering MongoDB as a service
@@ -437,7 +437,6 @@ const rental = await Rental.create({
   rental_status: 'Pending',
 });
 ```
-
 ## Project Dependencies
 
 ### Core Dependencies
@@ -448,6 +447,10 @@ const rental = await Rental.create({
      * Implements route handling for all business operations
      * Provides middleware support for authentication and error handling
      * Enables structured response formatting
+   - **Alternatives Comparison**:
+     * **Koa.js**: Lighter-weight with better async support, but smaller ecosystem and less middleware
+     * **Fastify**: Better performance but steeper learning curve and smaller community
+     * **Hapi.js**: More configuration-focused but slower performance for simple APIs
    - **Industry Relevance**: Most popular Node.js framework for web applications
    - **License**: MIT License
 
@@ -457,6 +460,10 @@ const rental = await Rental.create({
      * Enables flexible document structure for evolving business requirements
      * Provides high performance for read/write operations
      * Supports indexing for efficient querying
+   - **Alternatives Comparison**:
+     * **PostgreSQL**: Better for complex relations but less flexible for schema changes
+     * **MySQL**: Stronger consistency guarantees but more rigid structure
+     * **DynamoDB**: Fully managed with excellent scaling but vendor lock-in and less flexible querying
    - **Industry Relevance**: Leading NoSQL database for web applications
    - **License**: SSPL (Server Side Public License)
 
@@ -467,6 +474,10 @@ const rental = await Rental.create({
      * Implements middleware hooks for password hashing and payment date updates
      * Simplifies relationships between collections
      * Provides query building with chainable methods
+   - **Alternatives Comparison**:
+     * **MongoDB Driver (native)**: Higher performance but lacks schema validation and middleware
+     * **Prisma**: Better TypeScript integration but less mature for MongoDB
+     * **TypeORM**: Supports multiple databases but less optimized for MongoDB specifics
    - **Industry Relevance**: Standard ODM for MongoDB in Node.js applications
    - **License**: MIT License
 
@@ -476,6 +487,10 @@ const rental = await Rental.create({
      * Compares login attempts with stored hashed passwords
      * Implements salt rounds for enhanced security
      * Prevents plain text password storage
+   - **Alternatives Comparison**:
+     * **Argon2**: More secure against GPU attacks but less widely adopted
+     * **Scrypt**: Better against hardware attacks but slower implementation
+     * **Native crypto**: Built into Node.js but less specialized for password hashing
    - **Industry Relevance**: Industry standard for password security
    - **License**: MIT License
 
@@ -486,6 +501,10 @@ const rental = await Rental.create({
      * Extracts user information from tokens
      * Enables stateless authentication across API
      * Supports token expiration for security
+   - **Alternatives Comparison**:
+     * **Passport.js**: More comprehensive but adds complexity
+     * **OAuth2**: Better for third-party authentication but significant overhead
+     * **Session-based auth**: Better for sensitive applications but requires session storage
    - **Industry Relevance**: Standard for stateless authentication
    - **License**: MIT License
 
@@ -495,6 +514,10 @@ const rental = await Rental.create({
      * Manages different configurations for development and production
      * Secures sensitive information like database credentials and JWT secret
      * Simplifies deployment across environments
+   - **Alternatives Comparison**:
+     * **config**: More structured with hierarchical configs but additional complexity
+     * **convict**: Better validation but steeper learning curve
+     * **env-cmd**: CLI-focused approach but less integration with Node.js
    - **Industry Relevance**: Standard approach for configuration
    - **License**: BSD-2-Clause License
 
@@ -505,6 +528,10 @@ const rental = await Rental.create({
      * Prevents clickjacking
      * Implements Content Security Policy
      * Disables X-Powered-By header to hide technology stack
+   - **Alternatives Comparison**:
+     * **Custom middleware**: More control but requires security expertise
+     * **express-security**: Less maintained with fewer features
+     * **lusca**: Focused on specific security aspects but less comprehensive
    - **Industry Relevance**: Essential for API security
    - **License**: MIT License
 
@@ -514,6 +541,10 @@ const rental = await Rental.create({
      * Ensures proper input format for watch rentals and payments
      * Sanitizes input to prevent injection attacks
      * Provides consistent validation error responses
+   - **Alternatives Comparison**:
+     * **Joi**: More powerful validation but not Express-specific
+     * **Yup**: Better TypeScript support but larger bundle size
+     * **Zod**: Strong TypeScript integration but newer and less mature
    - **Industry Relevance**: Common in Express.js applications
    - **License**: MIT License
 
@@ -523,6 +554,10 @@ const rental = await Rental.create({
      * Handles preflight requests for complex operations
      * Enables secure communication between frontend and backend
      * Restricts access from unauthorized domains
+   - **Alternatives Comparison**:
+     * **Custom middleware**: More control but requires CORS expertise
+     * **express-cors**: Less maintained and fewer features
+     * **API gateway**: Better for complex setups but adds infrastructure complexity
    - **Industry Relevance**: Essential for modern web APIs
    - **License**: MIT License
 
@@ -532,6 +567,10 @@ const rental = await Rental.create({
       * Eliminates need for try/catch blocks in every controller
       * Forwards errors to the global error handler
       * Improves code readability and maintenance
+    - **Alternatives Comparison**:
+      * **try/catch blocks**: More explicit but verbose and repetitive
+      * **express-promise-router**: Router-specific approach but less flexible
+      * **async-middleware**: Similar functionality but less maintained
     - **Industry Relevance**: Standard solution for async error handling in Express
     - **License**: MIT License
 
@@ -544,6 +583,10 @@ const rental = await Rental.create({
      * Enables mocking of database and external services
      * Generates test coverage reports
      * Supports isolated test environments
+   - **Alternatives Comparison**:
+     * **Mocha+Chai**: More flexible but requires more setup
+     * **AVA**: Better for parallel tests but less ecosystem
+     * **Jasmine**: Built-in assertion and mocking but less flexible
    - **Industry Relevance**: Standard for JavaScript testing
    - **License**: MIT License
 
@@ -553,6 +596,10 @@ const rental = await Rental.create({
      * Verifies response status codes and content
      * Tests authentication and authorization flows
      * Validates data manipulation through API
+   - **Alternatives Comparison**:
+     * **Axios**: Simpler but requires more assertion code
+     * **node-fetch**: Closer to browser fetch but less testing-focused
+     * **got**: Feature-rich but requires more setup for testing
    - **Industry Relevance**: Common for HTTP testing
    - **License**: MIT License
 
@@ -562,6 +609,10 @@ const rental = await Rental.create({
      * Catches potential bugs and code quality issues
      * Ensures consistent coding practices across team
      * Integrates with IDE for real-time feedback
+   - **Alternatives Comparison**:
+     * **JSHint**: Simpler but less configurable and extensible
+     * **StandardJS**: Zero configuration but less customizable
+     * **Prettier**: Focuses on formatting rather than code quality
    - **Industry Relevance**: Standard for JavaScript linting
    - **License**: MIT License
 
@@ -571,6 +622,10 @@ const rental = await Rental.create({
      * Standardizes code formatting and structure
      * Customized for our database naming conventions
      * Supports modern ECMAScript features
+   - **Alternatives Comparison**:
+     * **Standard**: Simpler rules but less comprehensive
+     * **Google Style Guide**: More strict but less JavaScript-idiomatic
+     * **XO**: Opinionated and strict but less widely adopted
    - **Industry Relevance**: Widely adopted style guide
    - **License**: MIT License
 
@@ -580,6 +635,10 @@ const rental = await Rental.create({
      * Prevents circular dependencies
      * Validates import paths
      * Enforces consistent import styles
+   - **Alternatives Comparison**:
+     * **eslint-plugin-simple-import-sort**: Focused on sorting but less validation
+     * **eslint-plugin-unused-imports**: Only handles unused imports
+     * **Manual rules**: Could configure individual rules but less comprehensive
    - **Industry Relevance**: Essential for modular code organization
    - **License**: MIT License
 
@@ -596,6 +655,10 @@ const rental = await Rental.create({
     "test:coverage": "jest --coverage"
   }
   ```
+- **Alternatives Comparison**:
+  * **Yarn**: Faster installation but requires additional tooling
+  * **pnpm**: Better disk space usage but less mainstream adoption
+  * **Bun**: Faster performance but newer with less compatibility
 - **Note**: The project uses Node.js native `--watch` flag instead of nodemon for development
 - **Installation**: `npm install`
 
