@@ -11,8 +11,7 @@ To ensure this project meets industry standards, we have carefully selected tech
 
 Below is a detailed explanation of the **software and hardware** requirements for running this backend efficiently, why they are chosen for this project compared against their alternatives and their licensing details.
 
-
-## Software Technologies
+## Software and hardware technologies
 
 ### **Backend Framework: Node.js & Express.js**
 The backend is built using **Node.js**, a **non-blocking, event-driven runtime**, and **Express.js**, a lightweight web framework that simplifies API development. Node.js is widely used in **high-performance applications** like Netflix, LinkedIn, and PayPal due to its **asynchronous nature**, making it ideal for handling multiple user requests efficiently.
@@ -48,7 +47,7 @@ The backend is built using **Node.js**, a **non-blocking, event-driven runtime**
 
    **MongoDB is preferred** due to its ability to scale horizontally, handle semi-structured data efficiently, and integrate seamlessly with Node.js.
 
-### **MongoDB Atlas: Cloud Database**
+### **Cloud Database: MongoDB Atlas**
 This backend leverages **MongoDB Atlas**, a fully managed cloud database service that offers:
 - **Automatic scaling** based on demand.
 - **Built-in security** with encryption and access control.
@@ -102,6 +101,133 @@ For deploying this backend on **Render, AWS, or DigitalOcean**, a cloud server m
 - **Storage:** **20GB+ SSD** for storing logs, backups, and database data.
 - **Database:** **MongoDB Atlas** or **self-hosted MongoDB instance**.
 - **Security:** **Enable HTTPS, firewall rules, and automatic backups**.  
+
+## Coding Style Guide and Conventions
+
+### Airbnb JavaScript Style Guide
+
+#### Overview
+The project adheres to the Airbnb JavaScript Style Guide, a comprehensive and widely-adopted coding standard that ensures code quality, consistency, and maintainability.
+
+#### Rationale for Choosing Airbnb Style Guide
+
+##### 1. Industry-Standard Practices
+- Developed and used by leading technology companies
+- Widely adopted in the JavaScript and Node.js ecosystem
+- Reflects best practices in modern JavaScript development
+
+##### 2. Comprehensive Code Quality
+- Enforces consistent code formatting
+- Prevents potential errors and anti-patterns
+- Improves code readability and maintainability
+
+#### Key Style Guide Configurations
+
+```json
+{
+  "extends": "airbnb-base",
+  "env": {
+    "node": true,
+    "es6": true,
+    "es2021": true,
+    "jest": true
+  },
+  "plugins": ["import"],
+  "rules": {
+    "no-console": "off",
+    "consistent-return": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
+    "no-underscore-dangle": "off",
+    "import/no-unresolved": ["error", { "commonjs": true }]
+  }
+}
+```
+
+#### Naming Conventions
+
+##### JavaScript Variables and Functions
+- Use camelCase for variable and function names
+- Example: `getUserProfile()`, `totalRentalPrice`
+
+##### Database and Schema Fields
+A unique approach allows snake_case for database-related fields:
+```javascript
+{
+  "camelcase": [
+    "error",
+    {
+      "properties": "never",
+      "allow": [
+        "^brand_",
+        "^first_",
+        "^last_",
+        "^street_",
+        "^payment_",
+        "^watch_",
+        "^user_",
+        "^rental_"
+      ]
+    }
+  ]
+}
+```
+
+**Reasoning for Flexible Naming:**
+- Aligns with MongoDB's document-based structure
+- Allows semantic grouping of related fields
+- Maintains database-specific naming conventions
+- Provides clarity in complex domain models
+
+#### Key Style Principles
+
+1. **Consistent Formatting**
+   - 2-space indentation
+   - Descriptive variable and function names
+   - Clear, concise code structure
+
+2. **Error Handling**
+   - Consistent approach to error management
+   - Use of middleware for async error handling
+   - Meaningful error messages
+
+3. **Import and Module Management**
+   - Organized import statements
+   - Clear module exports
+   - Minimal use of default exports
+
+#### Practical Implementation
+
+##### Model Design Example
+```javascript
+const userSchema = new mongoose.Schema({
+  first_name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+  }
+});
+```
+
+#### Benefits in Our Project
+- Consistent code across all backend modules
+- Improved code review process
+- Reduced cognitive load for developers
+- Enhanced code maintainability
+- Easier onboarding for new team members
+
+#### Continuous Improvement
+- Regular ESLint configuration updates
+- Team code reviews
+- Ongoing adherence to style guide principles
+
+The Airbnb Style Guide provides a robust, well-thought-out approach to JavaScript development, ensuring our Luxury Watch Rental Backend maintains high code quality and consistency.
 
 ## Project Dependencies
 
