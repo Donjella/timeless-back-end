@@ -7,6 +7,9 @@ const {
   ForbiddenError,
 } = require('../utils/errors');
 
+// Valid payment methods
+const VALID_PAYMENT_METHODS = ['Credit Card', 'PayPal', 'Bank Transfer', 'Cash'];
+
 // @desc    Create a new payment
 // @route   POST /api/payments
 // @access  Private
@@ -24,6 +27,11 @@ const createPayment = asyncHandler(async (req, res, next) => {
       throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
     }
 
+    // Validate payment method
+    if (!VALID_PAYMENT_METHODS.includes(payment_method)) {
+      throw new ValidationError(`Invalid payment method. Supported methods are: ${VALID_PAYMENT_METHODS.join(', ')}`);
+    }
+
     // Ensure the rental exists
     const rental = await Rental.findById(rental_id);
     if (!rental) {
@@ -35,11 +43,13 @@ const createPayment = asyncHandler(async (req, res, next) => {
       throw new ForbiddenError('Not authorized to create payment for this rental');
     }
 
+    // Create payment with the rental field instead of rental_id
     const payment = await Payment.create({
-      rental_id,
+      rental: rental_id, // Changed from rental_id to rental
       amount,
       payment_method,
-      payment_status: 'Paid',
+      payment_status: 'Completed', // Your schema uses 'Completed' not 'Paid'
+      transaction_id: `TX-${Date.now()}`, // Generate a transaction ID since it's required
     });
 
     res.status(201).json(payment);
@@ -54,10 +64,32 @@ const createPayment = asyncHandler(async (req, res, next) => {
 const getPayments = asyncHandler(async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
-      throw new ForbiddenError('Access denied. Admin only.');
+      throw new ForbiddenError('Not authorized as admin');
     }
 
-    const payments = await Payment.find().populate('rental_id');
+    const payments = await Payment.find().populate('rental');
+    res.json(payments);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Get current user's payments
+// @route   GET /api/payments/user/me
+// @access  Private
+const getUserPayments = asyncHandler(async (req, res, next) => {
+  try {
+    // Find all rentals belonging to the user
+    const userRentals = await Rental.find({ user: req.user._id });
+
+    // Get all rental IDs
+    const rentalIds = userRentals.map((rental) => rental._id);
+
+    // Find all payments for these rentals
+    const payments = await Payment.find({ rental: { $in: rentalIds } })
+      .populate('rental')
+      .sort({ createdAt: -1 });
+
     res.json(payments);
   } catch (error) {
     next(error);
@@ -69,8 +101,9 @@ const getPayments = asyncHandler(async (req, res, next) => {
 // @access  Private
 const getPaymentById = asyncHandler(async (req, res, next) => {
   try {
+    // First populate the payment with rental information
     const payment = await Payment.findById(req.params.id).populate({
-      path: 'rental_id',
+      path: 'rental',
       populate: { path: 'user' },
     });
 
@@ -78,12 +111,12 @@ const getPaymentById = asyncHandler(async (req, res, next) => {
       throw new NotFoundError('Payment not found');
     }
 
-    // Ensure user owns the payment's rental or is an admin
-    if (payment.rental_id.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Check if user is admin OR the payment belongs to the user
+    if (req.user.role === 'admin' || payment.rental.user._id.toString() === req.user._id.toString()) {
+      res.json(payment);
+    } else {
       throw new ForbiddenError('Not authorized to view this payment');
     }
-
-    res.json(payment);
   } catch (error) {
     next(error);
   }
@@ -95,7 +128,7 @@ const getPaymentById = asyncHandler(async (req, res, next) => {
 const updatePaymentStatus = asyncHandler(async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
-      throw new ForbiddenError('Access denied. Admin only.');
+      throw new ForbiddenError('Not authorized as admin');
     }
 
     const payment = await Payment.findById(req.params.id);
@@ -105,6 +138,15 @@ const updatePaymentStatus = asyncHandler(async (req, res, next) => {
     }
 
     payment.payment_status = req.body.payment_status || payment.payment_status;
+
+    // If completing the payment, ensure a transaction ID is provided
+    if (payment.payment_status === 'Completed' && !payment.transaction_id) {
+      if (req.body.transaction_id) {
+        payment.transaction_id = req.body.transaction_id;
+      } else {
+        throw new ValidationError('Transaction ID is required for completed payments');
+      }
+    }
 
     const updatedPayment = await payment.save();
     res.json(updatedPayment);
@@ -119,7 +161,7 @@ const updatePaymentStatus = asyncHandler(async (req, res, next) => {
 const deletePayment = asyncHandler(async (req, res, next) => {
   try {
     if (req.user.role !== 'admin') {
-      throw new ForbiddenError('Access denied. Admin only.');
+      throw new ForbiddenError('Not authorized as admin');
     }
 
     const payment = await Payment.findById(req.params.id);
@@ -138,6 +180,7 @@ const deletePayment = asyncHandler(async (req, res, next) => {
 module.exports = {
   createPayment,
   getPayments,
+  getUserPayments,
   getPaymentById,
   updatePaymentStatus,
   deletePayment,
