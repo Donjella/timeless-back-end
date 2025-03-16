@@ -243,31 +243,115 @@ To ensure **smooth API responses and error consistency**, the project implements
   - **cors**: MIT License - Permits unrestricted use in both commercial and non-commercial applications
 
 ## Hardware Requirements
-The backend must run efficiently in both development and production environments. Below are the recommended system requirements.
+
+The backend must run efficiently in both development and production environments. Below are the system requirements for our project, their specific purposes, industry relevance, comparisons with alternatives, and licensing considerations.
 
 ### 1. Development Environment (Local Machine)
+
 For local development, you need a machine capable of running **Node.js, MongoDB, and a testing environment**.
 
-- **Operating System:** Windows, macOS, or Linux
-- **Processor:** Intel Core i5 / AMD Ryzen 5 (or higher)
-- **Memory (RAM):** **8GB minimum, 16GB recommended**
-- **Storage:** At least **10GB free SSD space**
-- **MongoDB:** Install locally or use MongoDB Atlas (Cloud Database)
+- **Operating System:**
+  - **Chosen Technology**: Windows, macOS, or Linux
+  - **Purpose**: Provides the foundation for running development tools, code editors, and local services
+  - **Industry Relevance**: All three are widely used in professional development environments
+  - **Alternatives Comparison**:
+    * **Windows**: Greatest compatibility with development tools but sometimes requires workarounds for Node.js path issues
+    * **macOS**: Excellent developer experience but higher hardware cost
+    * **Linux**: Most efficient resource usage and closest to production environments but steeper learning curve
+
+- **Processor:** 
+  - **Chosen Technology**: Intel Core i5 / AMD Ryzen 5 (or higher)
+  - **Purpose**: Ensures efficient compilation, testing, and concurrent development tasks
+  - **Industry Relevance**: Standard specification for modern development workstations
+  - **Alternatives Comparison**:
+    * **Intel Core i3**: Sufficient for basic development but slower test execution
+    * **ARM-based processors**: Lower power consumption but potential compatibility issues with some Node.js native extensions
+
+- **Memory (RAM):** 
+  - **Chosen Technology**: **8GB minimum, 16GB recommended**
+  - **Purpose**: Allows running multiple services simultaneously (Node.js server, MongoDB, code editor, browser testing)
+  - **Industry Relevance**: Standard memory configuration for web development workstations
+  - **Alternatives Comparison**:
+    * **4GB**: Workable for minimal setups but significant performance degradation with multiple services
+    * **32GB**: Future-proof but unnecessary cost for most development needs
+
+- **Storage:** 
+  - **Chosen Technology**: At least **10GB free SSD space**
+  - **Purpose**: Provides fast read/write access for code, dependencies, and local database
+  - **Industry Relevance**: SSD is now standard for development environments due to significant performance benefits
+  - **Alternatives Comparison**:
+    * **HDD storage**: Significantly slower database operations and longer build times
+    * **NVMe SSD**: Faster but more expensive with minimal practical benefit for this application
+
+- **Local Database Options**:
+  - **Chosen Technology**: MongoDB Community Edition (local) or MongoDB Atlas (Cloud)
+  - **Purpose**: Stores application data during development and testing phases
+  - **Industry Relevance**: MongoDB is widely used in modern web application stacks
+  - **Alternatives Comparison**:
+    * **Docker containerized MongoDB**: Better isolation but additional resource overhead
+    * **MongoDB Atlas (free tier)**: No local installation needed but requires internet connection
+    * **MongoDB in WSL (Windows)**: Better Linux compatibility but additional configuration complexity
+  - **Licensing**: MongoDB Community Edition is licensed under SSPL (Server Side Public License)
 
 ### 2. Production Environment (Cloud Hosting)
-For deploying this backend on **Render, AWS, or DigitalOcean**, a cloud server must handle multiple API requests efficiently.
 
-- **CPU:** 2-4 virtual CPUs (vCPUs) for handling concurrent requests
-- **Memory (RAM):** **4GB minimum (16GB for high traffic environments)**
-- **Storage:** **20GB+ SSD** for storing logs, backups, and database data
-- **Database:** **MongoDB Atlas** or **self-hosted MongoDB instance**
-- **Security:** **Enable HTTPS, firewall rules, and automatic backups**
-- **Network:** Reliable internet connection with adequate bandwidth for API traffic
+For this project, we deploy the backend using **Render** (Singapore region, free tier) for application hosting and **MongoDB Atlas** (Singapore region, free tier) for database services.
 
-- **Cloud Service Considerations**:
-  - **AWS/DigitalOcean/Render**: Pay-as-you-go service model; no additional software licensing costs beyond usage fees
-  - **MongoDB Atlas**: Tiered subscription model; free tier available for development and small applications
-  
+- **Cloud Service Provider**:
+  - **Chosen Technology**: Render Web Services (Singapore region, free tier)
+  - **Purpose**: Hosts our Node.js application, handles HTTP traffic, and manages deployment
+  - **Industry Relevance**: Gaining popularity as a developer-friendly alternative to Heroku and AWS for startups and SMEs
+  - **Alternatives Comparison**:
+    * **AWS (Amazon EC2/ECS)**: More feature-rich but complex pricing and steeper learning curve
+    * **DigitalOcean**: Simpler pricing structure but requires more configuration
+    * **Google Cloud Platform**: Better integration with other Google services but potentially higher costs
+    * **Heroku**: Similar ease of use but significantly higher cost at scale
+  - **Reasons for Choosing Render**:
+    * Simplified deployment with Git integration
+    * Developer-friendly dashboard and monitoring
+    * Free tier sufficient for our development and demonstration needs
+    * Singapore region provides lower latency for our target users
+  - **Licensing**: Render uses a pay-as-you-go service model with a free tier that includes limited resources
+
+- **Compute Resources**:
+  - **Chosen Technology**: Render Web Service (Free plan)
+  - **Purpose**: Provides the computing power to run our Node.js application
+  - **Industry Relevance**: Virtual/containerized environments are the standard for modern web applications
+  - **Alternatives Comparison**:
+    * **Paid tier (Standard)**: Provides more resources and uptime but unnecessary for our current needs
+    * **On-demand scaling**: Available in paid tiers for handling traffic spikes but not needed for this project
+
+- **Memory (RAM)**: 
+  - **Chosen Technology**: 512MB (free tier)
+  - **Purpose**: Ensures sufficient memory for Node.js runtime and concurrent request handling
+  - **Industry Relevance**: Standard entry-level memory allocation for web service containers
+  - **Alternatives Comparison**:
+    * **1GB+ RAM**: Available in paid tiers, would provide better performance under load but unnecessary for demonstration purposes
+
+- **Database Hosting**:
+  - **Chosen Technology**: **MongoDB Atlas** (Singapore region, free tier)
+  - **Purpose**: Provides reliable database storage for application data
+  - **Industry Relevance**: Leading cloud database service for MongoDB with strong industry adoption
+  - **Alternatives Comparison**:
+    * **Self-hosted MongoDB**: More control but requires significant DevOps expertise
+    * **Amazon DocumentDB**: AWS-compatible alternative but more expensive and missing some MongoDB features
+    * **CosmosDB (Azure)**: Good scaling but higher cost and vendor lock-in
+  - **Reasons for Choosing MongoDB Atlas**:
+    * Free tier sufficient for our project requirements
+    * Zero-configuration setup with our application
+    * Singapore region provides lower latency for our target users
+    * Includes basic monitoring and backup features even in free tier
+  - **Licensing**: MongoDB Atlas free tier includes 512MB storage with shared RAM
+
+- **Network Configuration**:
+  - **Chosen Technology**: Singapore region for both Render and MongoDB Atlas
+  - **Purpose**: Optimizes network latency for our target user base as they are deployed within the same region which reduces latency.
+  - **Industry Relevance**: Regional deployment is standard practice for optimizing application performance
+  - **Alternatives Comparison**:
+    * **US-based regions**: Higher latency for Asia-Pacific users
+    * **Multi-region deployment**: Better global performance but significantly higher cost and complexity
+  - **Licensing**: Regional deployment options included in both Render and MongoDB Atlas services
+
 ## Coding Style Guide and Conventions
 
 ### Airbnb JavaScript Style Guide
