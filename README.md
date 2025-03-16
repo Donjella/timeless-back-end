@@ -1,5 +1,3 @@
-# Timeless Luxury Watch Rental - Backend 
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -29,7 +27,17 @@
   - [Start the Development Server](#4-start-the-development-server)
   - [Running Tests](#5-running-tests)
   - [Production Deployment](#6-production-deployment)
-
+- [API Endpoints](#api-endpoints)
+  - [Base URLs](#base-urls)
+  - [Authentication](#authentication)
+  - [User Routes](#user-routes)
+  - [Watch Routes](#watch-routes)
+  - [Brand Routes](#brand-routes)
+  - [Rental Routes](#rental-routes)
+  - [Payment Routes](#payment-routes)
+  - [Address Routes](#address-routes)
+  - [Access Levels](#access-levels)
+  
 ## Overview
 The **Luxury Watch Backend** is a high-performance, scalable **Node.js & Express API** designed to handle watch rentals, user authentication, payment processing, and brand management. Built with **MongoDB**, it ensures flexibility in handling structured and unstructured data efficiently. This backend follows industry best practices in security, maintainability, and performance.
 
@@ -802,3 +810,97 @@ Deploy using **Render, AWS, or DigitalOcean**:
 ```bash
 npm start
 ```
+
+# API Endpoints
+
+This document provides a complete list of all API endpoints available in the Timeless Watch Rental application.
+
+## Base URLs
+
+**Production:**
+```
+https://timeless-back-end.onrender.com/
+```
+
+**Development:**
+```
+http://localhost:5000/
+```
+
+## Authentication
+
+Many endpoints require authentication using JWT tokens. Include the token in the Authorization header:
+
+```
+Authorization: Bearer <your-token>
+```
+
+## User Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/users/register` | Register a new user | Public |
+| POST | `/api/users/login` | Login and get token | Public |
+| GET | `/api/users/profile` | Get user profile | Private |
+| PATCH | `/api/users/profile` | Update user profile | Private |
+| GET | `/api/users` | Get all users | Admin |
+| GET | `/api/users/:id` | Get user by ID | Admin |
+| PATCH | `/api/users/role/:id` | Update user role | Admin |
+| DELETE | `/api/users/:id` | Delete a user | Admin |
+
+## Watch Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/watches` | Get all watches | Public |
+| GET | `/api/watches/:id` | Get watch by ID | Public |
+| POST | `/api/watches` | Create a new watch | Admin |
+| PUT | `/api/watches/:id` | Update a watch | Admin |
+| DELETE | `/api/watches/:id` | Delete a watch | Admin |
+
+## Brand Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/brands` | Get all brands | Public |
+| GET | `/api/brands/:id` | Get brand by ID | Public |
+| POST | `/api/brands` | Create a new brand | Admin |
+| PUT | `/api/brands/:id` | Update a brand | Admin |
+| DELETE | `/api/brands/:id` | Delete a brand | Admin |
+
+## Rental Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/rentals` | Create a new rental | Private |
+| GET | `/api/rentals/:id` | Get rental by ID | Private |
+| GET | `/api/rentals` | Get all rentals | Admin |
+| PATCH | `/api/rentals/:id` | Update rental status | Admin |
+| DELETE | `/api/rentals/:id` | Delete a rental | Admin |
+
+## Payment Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/payments` | Create a new payment | Private |
+| GET | `/api/payments/user/me` | Get user's payments | Private |
+| GET | `/api/payments/:id` | Get payment by ID | Private |
+| GET | `/api/payments` | Get all payments | Admin |
+| PATCH | `/api/payments/:id` | Update payment status | Admin |
+| DELETE | `/api/payments/:id` | Delete a payment | Admin |
+
+## Address Routes
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/addresses` | Create a new address | Private |
+| GET | `/api/addresses/:id` | Get address by ID | Private |
+| PATCH | `/api/addresses/:id` | Update an address | Private |
+| DELETE | `/api/addresses/:id` | Delete an address | Private |
+| GET | `/api/addresses` | Get all addresses | Admin |
+
+## Access Levels
+
+- **Public**: Accessible without authentication
+- **Private**: Requires user authentication (valid JWT token)
+- **Admin**: Requires admin role privileges
