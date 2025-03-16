@@ -104,24 +104,34 @@ For deploying this backend on **Render, AWS, or DigitalOcean**, a cloud server m
 
 ## Coding Style Guide and Conventions
 
+
 ### Airbnb JavaScript Style Guide
 
-#### Overview
-The project adheres to the Airbnb JavaScript Style Guide, a comprehensive and widely-adopted coding standard that ensures code quality, consistency, and maintainability.
+The project adheres to the **Airbnb JavaScript Style Guide**, a comprehensive and widely-adopted coding standard that ensures code quality, consistency, and maintainability.
 
-#### Rationale for Choosing Airbnb Style Guide
+### Rationale for Choosing Airbnb Style Guide
+1. **Industry-Standard Practices**
+   * Developed and used by leading technology companies
+   * Widely adopted in the JavaScript and Node.js ecosystem
+   * Reflects best practices in modern JavaScript development
+2. **Comprehensive Code Quality**
+   * Enforces consistent code formatting
+   * Prevents potential errors and anti-patterns
+   * Improves code readability and maintainability
 
-##### 1. Industry-Standard Practices
-- Developed and used by leading technology companies
-- Widely adopted in the JavaScript and Node.js ecosystem
-- Reflects best practices in modern JavaScript development
+### ESLint Implementation
 
-##### 2. Comprehensive Code Quality
-- Enforces consistent code formatting
-- Prevents potential errors and anti-patterns
-- Improves code readability and maintainability
+#### Setup and Configuration
+Our project leverages ESLint to automatically enforce the Airbnb JavaScript Style Guide through the following implementation:
 
-#### Key Style Guide Configurations
+```bash
+# Installation of compatible packages
+npm install --save-dev eslint@8 eslint-config-airbnb-base eslint-plugin-import
+```
+
+> **Important Note on Compatibility**: We specifically install ESLint v8 because the Airbnb config (`eslint-config-airbnb-base`) is currently compatible only with ESLint v8.x and has compatibility issues with ESLint v9.x. Using the explicit version number ensures we avoid dependency conflicts.
+
+#### Configuration File (.eslintrc.json)
 
 ```json
 {
@@ -138,66 +148,132 @@ The project adheres to the Airbnb JavaScript Style Guide, a comprehensive and wi
     "consistent-return": "off",
     "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
     "no-underscore-dangle": "off",
-    "import/no-unresolved": ["error", { "commonjs": true }]
+    "import/no-unresolved": ["error", { "commonjs": true }],
+    "camelcase": [
+      "error",
+      {
+        "properties": "never",
+        "ignoreDestructuring": true,
+        "ignoreImports": true,
+        "allow": [
+          "^brand_",
+          "^first_",
+          "^last_",
+          "^street_",
+          "^payment_",
+          "^postal_",
+          "^watch_",
+          "^total_",
+          "^user_",
+          "^rental_"
+        ]
+      }
+    ]
   }
 }
 ```
 
-#### Naming Conventions
+#### Integration in Development Workflow
 
-##### JavaScript Variables and Functions
-- Use camelCase for variable and function names
-- Example: `getUserProfile()`, `totalRentalPrice`
+1. **NPM Scripts for Linting**
+   ```json
+   "scripts": {
+     "lint": "eslint .",
+     "lint:fix": "eslint . --fix"
+   }
+   ```
 
-##### Database and Schema Fields
-A unique approach allows snake_case for database-related fields:
+   **Running ESLint from the Command Line:**
+   ```bash
+   # Run ESLint on all files
+   npx eslint .
+   
+   # Run ESLint with automatic fixing
+   npx eslint . --fix
+   
+   # Run ESLint on a specific file or directory
+   npx eslint controllers/userController.js
+   ```
+
+2. **Editor Integration**
+   * VSCode ESLint extension configured for real-time feedback
+   * Provides immediate visual feedback on code style issues
+   * Allows quick fixes directly in the editor
+
+3. **Manual Code Reviews**
+   * Team members review code for style guide compliance
+   * ESLint rules serve as objective criteria during reviews
+
+### Ensuring ESLint Compatibility
+
+#### Version Management
+* The project specifically uses **ESLint v8.x** to maintain compatibility with the Airbnb configuration
+* Package.json lock file ensures consistent dependency versions across development environments
+* Team members should use the exact installation command provided to avoid version conflicts
+
+#### Troubleshooting Common Issues
+* If you encounter `Cannot find module 'eslint-config-airbnb-base'` errors, verify you're using ESLint v8.x
+* For peer dependency warnings, ensure all plugins are at versions compatible with ESLint v8.x
+* When upgrading dependencies, always verify Airbnb config compatibility first
+
+### Naming Conventions
+#### JavaScript Variables and Functions
+* Use camelCase for variable and function names
+* Example: `getUserProfile()`, `createRental()`
+
+#### Database and Schema Fields
+A unique approach allows snake_case for database-related fields as configured in our ESLint rules:
+
 ```javascript
-{
-  "camelcase": [
-    "error",
-    {
-      "properties": "never",
-      "allow": [
-        "^brand_",
-        "^first_",
-        "^last_",
-        "^street_",
-        "^payment_",
-        "^watch_",
-        "^user_",
-        "^rental_"
-      ]
-    }
-  ]
-}
+"camelcase": [
+  "error",
+  {
+    "properties": "never",
+    "ignoreDestructuring": true,
+    "ignoreImports": true,
+    "allow": [
+      "^brand_",
+      "^first_",
+      "^last_",
+      "^street_",
+      "^payment_",
+      "^postal_",
+      "^watch_",
+      "^total_",
+      "^user_",
+      "^rental_"
+    ]
+  }
+]
 ```
 
+**Notable Examples From Our Codebase:**
+* Database fields use snake_case: `first_name`, `last_name`, `street_address`, `watch_id`, `rental_days`, `total_rental_price`, `rental_start_date`, `rental_status`
+* JavaScript variables and functions use camelCase: `getUserProfile()`, `updateRentalStatus()`, `missingFields`, `userExists`, `updatedUser`
+
 **Reasoning for Flexible Naming:**
-- Aligns with MongoDB's document-based structure
-- Allows semantic grouping of related fields
-- Maintains database-specific naming conventions
-- Provides clarity in complex domain models
+* Aligns with MongoDB's document-based structure
+* Allows semantic grouping of related fields
+* Maintains database-specific naming conventions
+* Provides clarity in complex domain models
 
-#### Key Style Principles
-
+### Key Style Principles
 1. **Consistent Formatting**
-   - 2-space indentation
-   - Descriptive variable and function names
-   - Clear, concise code structure
-
+   * 2-space indentation
+   * Descriptive variable and function names
+   * Clear, concise code structure
 2. **Error Handling**
-   - Consistent approach to error management
-   - Use of middleware for async error handling
-   - Meaningful error messages
-
+   * Consistent approach to error management
+   * Use of middleware for async error handling
+   * Meaningful error messages
 3. **Import and Module Management**
-   - Organized import statements
-   - Clear module exports
-   - Minimal use of default exports
+   * Organized import statements
+   * Clear module exports
+   * Minimal use of default exports
 
-#### Practical Implementation
+### Practical Implementation
+#### Model Design Example
 
-##### Model Design Example
 ```javascript
 const userSchema = new mongoose.Schema({
   first_name: {
@@ -215,20 +291,61 @@ const userSchema = new mongoose.Schema({
 });
 ```
 
-#### Benefits in Our Project
-- Consistent code across all backend modules
-- Improved code review process
-- Reduced cognitive load for developers
-- Enhanced code maintainability
-- Easier onboarding for new team members
+#### Controller Example
 
-#### Continuous Improvement
-- Regular ESLint configuration updates
-- Team code reviews
-- Ongoing adherence to style guide principles
+```javascript
+// Calculate rental dates and total price
+const total_rental_price = watch.rental_day_price * rental_days;
+const rental_start_date = new Date();
+const rental_end_date = new Date();
+rental_end_date.setDate(rental_start_date.getDate() + rental_days);
 
-The Airbnb Style Guide provides a robust, well-thought-out approach to JavaScript development, ensuring our Luxury Watch Rental Backend maintains high code quality and consistency.
+// Create rental
+const rental = await Rental.create({
+  user: req.user._id,
+  watch: watch_id,
+  rental_days,
+  total_rental_price,
+  rental_start_date,
+  rental_end_date,
+  rental_status: 'Pending',
+});
+```
 
+### ESLint Customization for Project Needs
+
+1. **Rule Overrides for Special Cases**
+   * Custom rules adapted for specific project requirements
+   * Documented exceptions with clear justifications
+
+2. **Directory-Specific Configurations**
+   ```javascript
+   // For test directories
+   /* eslint-env jest */
+   
+   // For specific modules with unique requirements
+   /* eslint-disable specific-rule */
+   ```
+
+3. **Automatic Fixing Capabilities**
+   * Configured rules to auto-fix common issues where safe
+   * Preservation of code behavior while improving style
+
+### Benefits in Our Project
+* Consistent code across all backend modules
+* Improved code review process
+* Reduced cognitive load for developers
+* Enhanced code maintainability
+* Easier onboarding for new team members
+* Automated quality assurance through CI/CD integration
+
+### Continuous Improvement
+* Regular ESLint configuration updates
+* Team code reviews
+* Ongoing adherence to style guide principles
+* Quarterly review of linting rules and effectiveness
+
+The Airbnb Style Guide implemented through ESLint provides a robust, well-thought-out approach to JavaScript development, ensuring our Luxury Watch Rental Backend maintains high code quality and consistency while automating the enforcement of coding standards.
 ## Project Dependencies
 
 ### Core Dependencies
@@ -456,9 +573,31 @@ To run a specific test file:
 npx jest src/tests/userController.test.js
 ```
 
+#### Test Coverage
+To generate and view test coverage reports:
+```bash
+# Generate coverage report
+npx jest --coverage
+
+# Generate coverage and open report in browser
+npx jest --coverage --coverageReporters="html" && open coverage/index.html
+```
+
+The coverage report shows:
+- **Statement coverage**: Percentage of code statements executed
+- **Branch coverage**: Percentage of code branches (if/else) executed
+- **Function coverage**: Percentage of functions called
+- **Line coverage**: Percentage of executable lines executed
+
+You can also add a custom npm script in package.json:
+```json
+"scripts": {
+  "test:coverage": "jest --coverage"
+}
+```
+
 ### **6️. Production Deployment**
 Deploy using **Render, AWS, or DigitalOcean**:
 ```bash
 npm start
 ```
-
