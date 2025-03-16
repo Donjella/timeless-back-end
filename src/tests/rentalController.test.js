@@ -26,7 +26,7 @@ const createTestWatch = async (brand) => {
     condition: 'Good',
     quantity: 5,
   });
-  return await watch.save();
+  return watch.save();
 };
 
 // Function to create a test rental
@@ -42,7 +42,7 @@ const createTestRental = async (user, watch) => {
     rental_status: 'Pending',
     collection_mode: 'Pickup',
   });
-  return await rental.save();
+  return rental.save();
 };
 
 // Database Connection Before Running Tests
@@ -111,9 +111,9 @@ describe('Input Validation & Error Handling', () => {
     const res = await request(app)
       .post('/api/rentals')
       .set('Authorization', `Bearer ${userToken}`)
-      .send({ 
-        watch_id: fakeWatchId, 
-        rental_days: 3 
+      .send({
+        watch_id: fakeWatchId,
+        rental_days: 3,
       });
 
     expect(res.statusCode).toBe(404);
@@ -128,9 +128,9 @@ describe('Input Validation & Error Handling', () => {
     const res = await request(app)
       .post('/api/rentals')
       .set('Authorization', `Bearer ${userToken}`)
-      .send({ 
-        watch_id: watch._id, 
-        rental_days: 3 
+      .send({
+        watch_id: watch._id,
+        rental_days: 3,
       });
 
     expect(res.statusCode).toBe(400);
@@ -186,7 +186,7 @@ describe('Authentication & Authorization', () => {
     userToken = user.generateToken();
 
     admin = new User(generateTestUser('rental-auth-admin', 'admin'));
-    await admin.save();  
+    await admin.save();
     adminToken = admin.generateToken();
   });
 
@@ -208,7 +208,7 @@ describe('Authentication & Authorization', () => {
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toMatch(/Not authorized, no token provided/);
   });
-  
+
   it('Should allow admins to list all rentals', async () => {
     // Create a rental
     const rental = await createTestRental(user, watch);
@@ -279,5 +279,5 @@ describe('Database Interaction', () => {
     // Refresh the watch from the database
     const updatedWatch = await Watch.findById(watch._id);
     expect(updatedWatch.quantity).toBe(initialQuantity - 1);
-  }); 
+  });
 });

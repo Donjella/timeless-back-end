@@ -8,7 +8,8 @@ const { NotFoundError, ValidationError, ForbiddenError } = require('../utils/err
 // @access  Private (User)
 const createRental = asyncHandler(async (req, res, next) => {
   try {
-    let { watch_id, rental_days } = req.body;
+    const { watch_id } = req.body;
+    let { rental_days } = req.body;
 
     // Identify missing fields dynamically
     const missingFields = [];
