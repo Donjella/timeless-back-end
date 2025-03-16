@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet'); // Import helmet
 require('dotenv').config();
 
 // Import middleware
@@ -15,6 +16,9 @@ const rentalRoutes = require('./routes/rentalRoutes');
 
 // Make an instance of an express server
 const app = express();
+
+// Add security headers with Helmet
+app.use(helmet());
 
 // Add middleware to parse JSON request bodies
 app.use(express.json());
