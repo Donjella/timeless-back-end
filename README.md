@@ -59,7 +59,9 @@ The backend is built using **Node.js**, a **non-blocking, event-driven runtime**
   - **Express.js**: MIT License - Same permissions and conditions as Node.js, fully compatible with commercial projects
 
 ### Database: MongoDB & Mongoose
-**MongoDB**, a NoSQL database, is used to store data for **users, rentals, payments, brands, and watches**. **Mongoose** provides an Object Data Modeling (ODM) layer for structured interaction with MongoDD.
+**MongoDB**, a NoSQL database, is used to store data in collections such as users, rentals, payments, brands, addresses, and watches. 
+
+**Mongoose** provides an Object Data Modeling (ODM) layer for structured interaction with MongoDB.
 
 - **Industry Relevance**:
   - Used by companies like Uber, eBay, and Electronic Arts
