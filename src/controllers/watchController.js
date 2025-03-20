@@ -18,7 +18,7 @@ const createWatch = asyncHandler(async (req, res) => {
     condition,
     quantity,
     brandId,
-    imageUrl,
+    image_url,
   } = req.body;
 
   // Validate required fields
@@ -51,7 +51,7 @@ const createWatch = asyncHandler(async (req, res) => {
     condition: formattedCondition,
     quantity: quantity || 1,
     brand: brandId,
-    imageUrl: imageUrl || '', // Optional image URL
+    image_url: image_url || '', // Optional image URL
   });
 
   const createdWatch = await watch.save();
@@ -99,7 +99,7 @@ const updateWatch = asyncHandler(async (req, res) => {
     condition,
     quantity,
     brandId,
-    imageUrl,
+    image_url,
   } = req.body;
 
   // Find the watch
@@ -139,8 +139,8 @@ const updateWatch = asyncHandler(async (req, res) => {
   }
 
   // Update image URL
-  if (imageUrl !== undefined) {
-    watch.imageUrl = imageUrl;
+  if (image_url !== undefined) {
+    watch.image_url = image_url;
   }
 
   const updatedWatch = await watch.save();

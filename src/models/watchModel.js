@@ -42,7 +42,7 @@ const watchSchema = mongoose.Schema(
       min: [0, 'Quantity cannot be negative'],
       default: 1,
     },
-    imageUrl: {
+    image_url: {
       type: String,
       default: '',
       trim: true,

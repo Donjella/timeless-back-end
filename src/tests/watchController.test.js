@@ -80,7 +80,7 @@ describe('Input Validation & Error Handling', () => {
         rental_day_price: 100,
         condition: 'Invalid', // Invalid condition
         quantity: 5,
-        brandId: brandId,
+        brandId,
       });
 
     expect(res.statusCode).toBe(400);
@@ -94,7 +94,7 @@ describe('Input Validation & Error Handling', () => {
       rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
-      brandId: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -157,7 +157,7 @@ describe('Authentication & Authorization', () => {
       rental_day_price: 120,
       condition: 'Excellent',
       quantity: 2,
-      brandId: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -190,7 +190,7 @@ describe('Authentication & Authorization', () => {
       rental_day_price: 90,
       condition: 'New',
       quantity: 2,
-      brandId: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -231,30 +231,31 @@ describe('Authentication & Authorization', () => {
  */
 describe('Database Interaction', () => {
   let brandId;
-  
-  beforeEach(async () => {
-    // Create a test brand before each test
-    const brand = new Brand({ brand_name: 'Tag Heuer' });
-    await brand.save();
-    brandId = brand._id;
-  });
+  let adminToken;
 
-  it('Should create a new watch in the database', async () => {
+  beforeEach(async () => {
     // Create admin user
     const adminUser = new User({
       ...generateTestUser('watch-db-admin'),
       role: 'admin',
     });
     await adminUser.save();
-    const adminToken = adminUser.generateToken();
+    adminToken = adminUser.generateToken();
 
+    // Create a test brand
+    const brand = new Brand({ brand_name: 'Tag Heuer' });
+    await brand.save();
+    brandId = brand._id;
+  });
+
+  it('Should create a new watch in the database', async () => {
     const watchData = {
       model: 'Carrera',
       year: 2018,
       rental_day_price: 70,
       condition: 'Excellent',
       quantity: 4,
-      brandId: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -294,125 +295,89 @@ describe('Database Interaction', () => {
 
     // Fetch the watch and check if brand info is populated
     const res = await request(app).get(`/api/watches/${watch._id}`);
-    
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('brand');
-    
+
     // Check for populated brand details
     expect(res.body.brand).toHaveProperty('_id', brandId.toString());
     expect(res.body.brand).toHaveProperty('brand_name', 'Tag Heuer');
   });
 
   it('Should create a watch with an image URL', async () => {
-    // Create admin user
-    const adminUser = new User({
-      ...generateTestUser('watch-image-admin'),
-      role: 'admin',
-    });
-    await adminUser.save();
-    const adminToken = adminUser.generateToken();
-  
-    // Create a test brand
-    const brand = new Brand({ brand_name: 'Test Brand' });
-    await brand.save();
-  
     const watchData = {
       model: 'Test Watch',
       year: 2023,
       rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
-      brandId: brand._id,
-      imageUrl: 'https://example.com/watch-image.jpg'
+      brandId,
+      image_url: 'https://example.com/watch-image.jpg',
     };
-  
+
     const res = await request(app)
       .post('/api/watches')
       .set('Authorization', `Bearer ${adminToken}`)
       .send(watchData);
-  
+
     expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty('imageUrl', watchData.imageUrl);
-  
+    expect(res.body).toHaveProperty('image_url', watchData.image_url);
+
     // Verify in database
     const watch = await WatchModel.findById(res.body._id);
-    expect(watch.imageUrl).toBe(watchData.imageUrl);
+    expect(watch.image_url).toBe(watchData.image_url);
   });
-  
+
   it('Should update watch with image URL', async () => {
-    // Create admin user
-    const adminUser = new User({
-      ...generateTestUser('watch-image-update-admin'),
-      role: 'admin',
-    });
-    await adminUser.save();
-    const adminToken = adminUser.generateToken();
-  
-    // Create a test brand
-    const brand = new Brand({ brand_name: 'Test Brand' });
-    await brand.save();
-  
-    // Create a watch
+    // Create a watch first
     const watch = new WatchModel({
       model: 'Original Watch',
       year: 2022,
       rental_day_price: 90,
       condition: 'Good',
       quantity: 3,
-      brand: brand._id,
+      brand: brandId,
     });
     await watch.save();
-  
+
     const updateData = {
-      imageUrl: 'https://example.com/updated-watch-image.jpg'
+      image_url: 'https://example.com/updated-watch-image.jpg',
     };
-  
+
     const res = await request(app)
       .put(`/api/watches/${watch._id}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send(updateData);
-  
+
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('imageUrl', updateData.imageUrl);
-  
+    expect(res.body).toHaveProperty('image_url', updateData.image_url);
+
     // Verify in database
     const updatedWatch = await WatchModel.findById(watch._id);
-    expect(updatedWatch.imageUrl).toBe(updateData.imageUrl);
+    expect(updatedWatch.image_url).toBe(updateData.image_url);
   });
-  
+
   it('Should allow creating a watch without an image URL', async () => {
-    // Create admin user
-    const adminUser = new User({
-      ...generateTestUser('watch-no-image-admin'),
-      role: 'admin',
-    });
-    await adminUser.save();
-    const adminToken = adminUser.generateToken();
-  
-    // Create a test brand
-    const brand = new Brand({ brand_name: 'Test Brand' });
-    await brand.save();
-  
     const watchData = {
       model: 'Imageless Watch',
       year: 2023,
       rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
-      brandId: brand._id,
+      brandId,
     };
-  
+
     const res = await request(app)
       .post('/api/watches')
       .set('Authorization', `Bearer ${adminToken}`)
       .send(watchData);
-  
+
     expect(res.statusCode).toBe(201);
-    expect(res.body.imageUrl).toBe('');
-  
+    expect(res.body.image_url).toBe('');
+
     // Verify in database
     const watch = await WatchModel.findById(res.body._id);
-    expect(watch.imageUrl).toBe('');
+    expect(watch.image_url).toBe('');
   });
 });
 

@@ -463,7 +463,8 @@ The configuration file (.eslintrc.json) extends the Airbnb base configuration wi
           "^watch_",
           "^total_",
           "^user_",
-          "^rental_"
+          "^rental_",
+          "^image_"
         ]
       }
     ]

@@ -29,7 +29,8 @@
           "^watch_",
           "^total_",
           "^user_",
-          "^rental_"
+          "^rental_",
+          "^image_"
         ]
       }
     ]
