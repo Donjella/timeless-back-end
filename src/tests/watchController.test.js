@@ -2,7 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { app } = require('../server');
 const User = require('../models/userModel');
-const Watch = require('../models/watchModel');
+const WatchModel = require('../models/watchModel');
 const Brand = require('../models/brandModel');
 
 // Function to generate unique test users
@@ -28,7 +28,7 @@ beforeAll(async () => {
 afterEach(async () => {
   console.log('Clearing test users, brands and watches from database...');
   await User.deleteMany();
-  await Watch.deleteMany();
+  await WatchModel.deleteMany();
   await Brand.deleteMany();
 });
 
@@ -77,10 +77,10 @@ describe('Input Validation & Error Handling', () => {
       .send({
         model: 'Submariner',
         year: 2020,
-        rental_day_price: 100,
+        rentalDayPrice: 100,
         condition: 'Invalid', // Invalid condition
         quantity: 5,
-        brand_id: brandId,
+        brandId,
       });
 
     expect(res.statusCode).toBe(400);
@@ -91,10 +91,10 @@ describe('Input Validation & Error Handling', () => {
     const watchData = {
       model: 'Submariner',
       year: 2020,
-      rental_day_price: 100,
+      rentalDayPrice: 100,
       condition: 'Excellent',
       quantity: 5,
-      brand_id: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -137,10 +137,10 @@ describe('Authentication & Authorization', () => {
     brandId = brand._id;
 
     // Create a test watch
-    const watch = new Watch({
+    const watch = new WatchModel({
       model: 'Speedmaster',
       year: 2019,
-      rental_day_price: 80,
+      rentalDayPrice: 80,
       condition: 'Good',
       quantity: 3,
       brand: brandId,
@@ -154,10 +154,10 @@ describe('Authentication & Authorization', () => {
     const adminWatchData = {
       model: 'Seamaster',
       year: 2022,
-      rental_day_price: 120,
+      rentalDayPrice: 120,
       condition: 'Excellent',
       quantity: 2,
-      brand_id: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -187,10 +187,10 @@ describe('Authentication & Authorization', () => {
     const watchData = {
       model: 'Datejust',
       year: 2021,
-      rental_day_price: 90,
+      rentalDayPrice: 90,
       condition: 'New',
       quantity: 2,
-      brand_id: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -204,7 +204,7 @@ describe('Authentication & Authorization', () => {
 
   it('Should prevent non-admin users from updating watches', async () => {
     const updateData = {
-      rental_day_price: 95,
+      rentalDayPrice: 95,
     };
 
     const res = await request(app)
@@ -233,7 +233,7 @@ describe('Database Interaction', () => {
   let brandId;
 
   beforeEach(async () => {
-    // Create a test brand
+    // Create a test brand before each test
     const brand = new Brand({ brand_name: 'Tag Heuer' });
     await brand.save();
     brandId = brand._id;
@@ -251,10 +251,10 @@ describe('Database Interaction', () => {
     const watchData = {
       model: 'Carrera',
       year: 2018,
-      rental_day_price: 70,
+      rentalDayPrice: 70,
       condition: 'Excellent',
       quantity: 4,
-      brand_id: brandId,
+      brandId,
     };
 
     const res = await request(app)
@@ -266,7 +266,7 @@ describe('Database Interaction', () => {
     expect(res.statusCode).toBe(201);
 
     // Check if it exists in the database
-    const watch = await Watch.findById(res.body._id);
+    const watch = await WatchModel.findById(res.body._id);
     expect(watch).toBeTruthy();
     expect(watch.model).toBe(watchData.model);
     expect(watch.brand.toString()).toBe(brandId.toString());
@@ -282,22 +282,137 @@ describe('Database Interaction', () => {
 
   it('Should populate brand information when getting watches', async () => {
     // Create a watch
-    const watch = new Watch({
+    const watch = new WatchModel({
       model: 'Monaco',
       year: 2017,
-      rental_day_price: 60,
+      rentalDayPrice: 60,
       condition: 'Good',
       quantity: 2,
       brand: brandId,
     });
     await watch.save();
 
-    // Get the watch and check if brand is populated
+    // Fetch the watch and check if brand info is populated
     const res = await request(app).get(`/api/watches/${watch._id}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('brand');
+
+    // Check for populated brand details
+    expect(res.body.brand).toHaveProperty('_id', brandId.toString());
     expect(res.body.brand).toHaveProperty('brand_name', 'Tag Heuer');
+  });
+
+  it('Should create a watch with an image URL', async () => {
+    // Create admin user
+    const adminUser = new User({
+      ...generateTestUser('watch-image-admin'),
+      role: 'admin',
+    });
+    await adminUser.save();
+    const adminToken = adminUser.generateToken();
+
+    // Create a test brand
+    const brand = new Brand({ brand_name: 'Test Brand' });
+    await brand.save();
+
+    const watchData = {
+      model: 'Test Watch',
+      year: 2023,
+      rentalDayPrice: 100,
+      condition: 'Excellent',
+      quantity: 5,
+      brandId: brand._id,
+      imageUrl: 'https://example.com/watch-image.jpg',
+    };
+
+    const res = await request(app)
+      .post('/api/watches')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(watchData);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('imageUrl', watchData.imageUrl);
+
+    // Verify in database
+    const watch = await WatchModel.findById(res.body._id);
+    expect(watch.imageUrl).toBe(watchData.imageUrl);
+  });
+
+  it('Should update watch with image URL', async () => {
+    // Create admin user
+    const adminUser = new User({
+      ...generateTestUser('watch-image-update-admin'),
+      role: 'admin',
+    });
+    await adminUser.save();
+    const adminToken = adminUser.generateToken();
+
+    // Create a test brand
+    const brand = new Brand({ brand_name: 'Test Brand' });
+    await brand.save();
+
+    // Create a watch
+    const watch = new WatchModel({
+      model: 'Original Watch',
+      year: 2022,
+      rentalDayPrice: 90,
+      condition: 'Good',
+      quantity: 3,
+      brand: brand._id,
+    });
+    await watch.save();
+
+    const updateData = {
+      imageUrl: 'https://example.com/updated-watch-image.jpg',
+    };
+
+    const res = await request(app)
+      .put(`/api/watches/${watch._id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(updateData);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('imageUrl', updateData.imageUrl);
+
+    // Verify in database
+    const updatedWatch = await WatchModel.findById(watch._id);
+    expect(updatedWatch.imageUrl).toBe(updateData.imageUrl);
+  });
+
+  it('Should allow creating a watch without an image URL', async () => {
+    // Create admin user
+    const adminUser = new User({
+      ...generateTestUser('watch-no-image-admin'),
+      role: 'admin',
+    });
+    await adminUser.save();
+    const adminToken = adminUser.generateToken();
+
+    // Create a test brand
+    const brand = new Brand({ brand_name: 'Test Brand' });
+    await brand.save();
+
+    const watchData = {
+      model: 'Imageless Watch',
+      year: 2023,
+      rentalDayPrice: 100,
+      condition: 'Excellent',
+      quantity: 5,
+      brandId: brand._id,
+    };
+
+    const res = await request(app)
+      .post('/api/watches')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(watchData);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.imageUrl).toBe('');
+
+    // Verify in database
+    const watch = await WatchModel.findById(res.body._id);
+    expect(watch.imageUrl).toBe('');
   });
 });
 
@@ -324,10 +439,10 @@ describe('Admin Operations', () => {
     brandId = brand._id;
 
     // Create a test watch
-    const watch = new Watch({
+    const watch = new WatchModel({
       model: 'Nautilus',
       year: 2022,
-      rental_day_price: 200,
+      rentalDayPrice: 200,
       condition: 'New',
       quantity: 1,
       brand: brandId,
@@ -338,7 +453,7 @@ describe('Admin Operations', () => {
 
   it('Should allow admin to update a watch', async () => {
     const updateData = {
-      rental_day_price: 250,
+      rentalDayPrice: 250,
       condition: 'excellent', // Test lowercase conversion
       quantity: 2,
     };
@@ -349,7 +464,7 @@ describe('Admin Operations', () => {
       .send(updateData);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.rental_day_price).toBe(updateData.rental_day_price);
+    expect(res.body.rentalDayPrice).toBe(updateData.rentalDayPrice);
     expect(res.body.condition).toBe('Excellent'); // Should be converted to title case
     expect(res.body.quantity).toBe(updateData.quantity);
   });
@@ -363,14 +478,14 @@ describe('Admin Operations', () => {
     expect(res.body.message).toMatch(/Watch removed/);
 
     // Verify watch was deleted
-    const watch = await Watch.findById(watchId);
+    const watch = await WatchModel.findById(watchId);
     expect(watch).toBeNull();
   });
 
   it('Should handle updating a non-existent watch', async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
     const updateData = {
-      rental_day_price: 300,
+      rentalDayPrice: 300,
     };
 
     const res = await request(app)
@@ -388,7 +503,7 @@ describe('Admin Operations', () => {
       year: currentYear + 5, // Future year (invalid)
     };
 
-    const watch = await Watch.findById(watchId);
+    const watch = await WatchModel.findById(watchId);
     const originalYear = watch.year;
 
     await request(app)
@@ -397,7 +512,7 @@ describe('Admin Operations', () => {
       .send(updateData);
 
     // fetch the watch again to verify year wasn't updated to an invalid value
-    const updatedWatch = await Watch.findById(watchId);
+    const updatedWatch = await WatchModel.findById(watchId);
     expect(updatedWatch.year).toBe(originalYear);
   });
 
@@ -416,7 +531,7 @@ describe('Admin Operations', () => {
     expect(res.body.model).toBe(updateData.model);
 
     // Confirm other fields haven't changed
-    const watch = await Watch.findById(watchId);
+    const watch = await WatchModel.findById(watchId);
     expect(watch.year).toBe(2022);
     expect(watch.condition).toBe('New');
   });

@@ -1,161 +1,171 @@
 const asyncHandler = require('express-async-handler');
-const Watch = require('../models/watchModel');
+const WatchModel = require('../models/watchModel');
+const Brand = require('../models/brandModel');
 const {
   NotFoundError,
   ValidationError,
   ForbiddenError,
 } = require('../utils/errors');
 
-// Function to convert string to title case
-const titleCase = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-// Valid condition options
-const validConditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
-
-// @desc    Create a new watch (Admin only)
+// @desc    Create a new watch
 // @route   POST /api/watches
-// @access  Private (Admin)
-const createWatch = asyncHandler(async (req, res, next) => {
-  try {
-    const {
-      model, year, rental_day_price, condition, quantity, brand_id,
-    } = req.body;
+// @access  Private/Admin
+const createWatch = asyncHandler(async (req, res) => {
+  const {
+    model,
+    year,
+    rentalDayPrice,
+    condition,
+    quantity,
+    brandId,
+    imageUrl,
+  } = req.body;
 
-    // Identify missing fields
-    const missingFields = [];
-    if (!model) missingFields.push('model');
-    if (!year) missingFields.push('year');
-    if (!rental_day_price) missingFields.push('rental_day_price');
-    if (!condition) missingFields.push('condition');
-    if (!quantity) missingFields.push('quantity');
-    if (!brand_id) missingFields.push('brand_id');
+  // Validate required fields
+  const requiredFields = ['model', 'year', 'rentalDayPrice', 'condition', 'brandId'];
+  const missingFields = requiredFields.filter((field) => !req.body[field]);
 
-    if (missingFields.length > 0) {
-      throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
-    }
-
-    // Convert condition to title case
-    const formattedCondition = titleCase(condition);
-
-    // Validate condition
-    if (!validConditions.includes(formattedCondition)) {
-      throw new ValidationError(
-        `Invalid condition: '${condition}'. Valid options are: ${validConditions.join(', ')}`,
-      );
-    }
-
-    const watch = await Watch.create({
-      model,
-      year,
-      rental_day_price,
-      condition: formattedCondition,
-      quantity,
-      brand: brand_id,
-    });
-
-    if (watch) {
-      res.status(201).json(watch);
-    } else {
-      throw new ValidationError('Invalid watch data');
-    }
-  } catch (error) {
-    next(error);
+  if (missingFields.length > 0) {
+    throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
   }
+
+  // Validate condition
+  const validConditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
+  const formattedCondition = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+
+  if (!validConditions.includes(formattedCondition)) {
+    throw new ValidationError('Invalid condition');
+  }
+
+  // Check if brand exists
+  const brand = await Brand.findById(brandId);
+  if (!brand) {
+    throw new NotFoundError('Brand not found');
+  }
+
+  // Create watch
+  const watch = new WatchModel({
+    model,
+    year,
+    rentalDayPrice,
+    condition: formattedCondition,
+    quantity: quantity || 1,
+    brand: brandId,
+    imageUrl: imageUrl || '', // Optional image URL
+  });
+
+  const createdWatch = await watch.save();
+
+  // Populate brand info for response
+  await createdWatch.populate('brand', 'brand_name');
+
+  res.status(201).json(createdWatch);
 });
 
 // @desc    Get all watches
 // @route   GET /api/watches
 // @access  Public
-const getWatches = asyncHandler(async (req, res, next) => {
-  try {
-    const watches = await Watch.find().populate('brand', 'brand_name');
-    res.json(watches);
-  } catch (error) {
-    next(error);
-  }
+const getWatches = asyncHandler(async (req, res) => {
+  const watches = await WatchModel.find().populate('brand', 'brand_name');
+  res.json(watches);
 });
 
 // @desc    Get a single watch by ID
 // @route   GET /api/watches/:id
 // @access  Public
-const getWatchById = asyncHandler(async (req, res, next) => {
-  try {
-    const watch = await Watch.findById(req.params.id).populate('brand', 'brand_name');
+const getWatchById = asyncHandler(async (req, res) => {
+  const watch = await WatchModel.findById(req.params.id).populate('brand', 'brand_name');
 
-    if (!watch) {
-      throw new NotFoundError('Watch not found');
-    }
-
-    res.json(watch);
-  } catch (error) {
-    next(error);
+  if (!watch) {
+    throw new NotFoundError('Watch not found');
   }
+
+  res.json(watch);
 });
 
-// @desc    Update a watch (Admin only)
+// @desc    Update a watch
 // @route   PUT /api/watches/:id
-// @access  Private (Admin)
-const updateWatch = asyncHandler(async (req, res, next) => {
-  try {
-    const watch = await Watch.findById(req.params.id);
-
-    if (!watch) {
-      throw new NotFoundError('Watch not found');
-    }
-
-    if (req.user.role !== 'admin') {
-      throw new ForbiddenError('Access denied. Admin only.');
-    }
-
-    watch.model = req.body.model || watch.model;
-    watch.year = req.body.year || watch.year;
-    watch.rental_day_price = req.body.rental_day_price || watch.rental_day_price;
-
-    if (req.body.condition) {
-      const formattedCondition = titleCase(req.body.condition);
-
-      if (!validConditions.includes(formattedCondition)) {
-        throw new ValidationError(
-          `Invalid condition: '${req.body.condition}'. Valid options are: ${validConditions.join(', ')}`,
-        );
-      }
-
-      watch.condition = formattedCondition;
-    }
-
-    watch.quantity = req.body.quantity !== undefined ? req.body.quantity : watch.quantity;
-
-    if (req.body.brand_id) {
-      watch.brand = req.body.brand_id;
-    }
-
-    const updatedWatch = await watch.save();
-    res.json(updatedWatch);
-  } catch (error) {
-    next(error);
+// @access  Private/Admin
+const updateWatch = asyncHandler(async (req, res) => {
+  // Ensure user is an admin
+  if (req.user.role !== 'admin') {
+    throw new ForbiddenError('Access denied. Admin only.');
   }
+
+  const {
+    model,
+    year,
+    rentalDayPrice,
+    condition,
+    quantity,
+    brandId,
+    imageUrl,
+  } = req.body;
+
+  // Find the watch
+  const watch = await WatchModel.findById(req.params.id);
+
+  if (!watch) {
+    throw new NotFoundError('Watch not found');
+  }
+
+  // Update fields if provided
+  if (model) watch.model = model;
+  if (year) watch.year = year;
+  if (rentalDayPrice !== undefined) watch.rentalDayPrice = rentalDayPrice;
+
+  // Validate and update condition
+  if (condition) {
+    const validConditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
+    const formattedCondition = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+
+    if (validConditions.includes(formattedCondition)) {
+      watch.condition = formattedCondition;
+    } else {
+      throw new ValidationError('Invalid condition');
+    }
+  }
+
+  // Update quantity
+  if (quantity !== undefined) watch.quantity = quantity;
+
+  // Update brand if provided and exists
+  if (brandId) {
+    const brand = await Brand.findById(brandId);
+    if (!brand) {
+      throw new NotFoundError('Brand not found');
+    }
+    watch.brand = brandId;
+  }
+
+  // Update image URL
+  if (imageUrl !== undefined) {
+    watch.imageUrl = imageUrl;
+  }
+
+  const updatedWatch = await watch.save();
+  await updatedWatch.populate('brand', 'brand_name');
+
+  res.json(updatedWatch);
 });
 
-// @desc    Delete a watch (Admin only)
+// @desc    Delete a watch
 // @route   DELETE /api/watches/:id
-// @access  Private (Admin)
-const deleteWatch = asyncHandler(async (req, res, next) => {
-  try {
-    const watch = await Watch.findById(req.params.id);
-
-    if (!watch) {
-      throw new NotFoundError('Watch not found');
-    }
-
-    if (req.user.role !== 'admin') {
-      throw new ForbiddenError('Access denied. Admin only.');
-    }
-
-    await watch.deleteOne();
-    res.json({ message: 'Watch removed' });
-  } catch (error) {
-    next(error);
+// @access  Private/Admin
+const deleteWatch = asyncHandler(async (req, res) => {
+  // Ensure user is an admin
+  if (req.user.role !== 'admin') {
+    throw new ForbiddenError('Access denied. Admin only.');
   }
+
+  const watch = await WatchModel.findById(req.params.id);
+
+  if (!watch) {
+    throw new NotFoundError('Watch not found');
+  }
+
+  await watch.deleteOne();
+  res.json({ message: 'Watch removed' });
 });
 
 module.exports = {
