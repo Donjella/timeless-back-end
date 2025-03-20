@@ -14,7 +14,7 @@ const createWatch = asyncHandler(async (req, res) => {
   const {
     model,
     year,
-    rentalDayPrice,
+    rental_day_price,
     condition,
     quantity,
     brandId,
@@ -22,7 +22,7 @@ const createWatch = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  const requiredFields = ['model', 'year', 'rentalDayPrice', 'condition', 'brandId'];
+  const requiredFields = ['model', 'year', 'rental_day_price', 'condition', 'brandId'];
   const missingFields = requiredFields.filter((field) => !req.body[field]);
 
   if (missingFields.length > 0) {
@@ -47,7 +47,7 @@ const createWatch = asyncHandler(async (req, res) => {
   const watch = new WatchModel({
     model,
     year,
-    rentalDayPrice,
+    rental_day_price,
     condition: formattedCondition,
     quantity: quantity || 1,
     brand: brandId,
@@ -95,7 +95,7 @@ const updateWatch = asyncHandler(async (req, res) => {
   const {
     model,
     year,
-    rentalDayPrice,
+    rental_day_price,
     condition,
     quantity,
     brandId,
@@ -112,7 +112,7 @@ const updateWatch = asyncHandler(async (req, res) => {
   // Update fields if provided
   if (model) watch.model = model;
   if (year) watch.year = year;
-  if (rentalDayPrice !== undefined) watch.rentalDayPrice = rentalDayPrice;
+  if (rental_day_price !== undefined) watch.rental_day_price = rental_day_price;
 
   // Validate and update condition
   if (condition) {

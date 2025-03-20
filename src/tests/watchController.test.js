@@ -77,7 +77,7 @@ describe('Input Validation & Error Handling', () => {
       .send({
         model: 'Submariner',
         year: 2020,
-        rentalDayPrice: 100,
+        rental_day_price: 100,
         condition: 'Invalid', // Invalid condition
         quantity: 5,
         brandId: brandId,
@@ -91,7 +91,7 @@ describe('Input Validation & Error Handling', () => {
     const watchData = {
       model: 'Submariner',
       year: 2020,
-      rentalDayPrice: 100,
+      rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
       brandId: brandId,
@@ -140,7 +140,7 @@ describe('Authentication & Authorization', () => {
     const watch = new WatchModel({
       model: 'Speedmaster',
       year: 2019,
-      rentalDayPrice: 80,
+      rental_day_price: 80,
       condition: 'Good',
       quantity: 3,
       brand: brandId,
@@ -154,7 +154,7 @@ describe('Authentication & Authorization', () => {
     const adminWatchData = {
       model: 'Seamaster',
       year: 2022,
-      rentalDayPrice: 120,
+      rental_day_price: 120,
       condition: 'Excellent',
       quantity: 2,
       brandId: brandId,
@@ -187,7 +187,7 @@ describe('Authentication & Authorization', () => {
     const watchData = {
       model: 'Datejust',
       year: 2021,
-      rentalDayPrice: 90,
+      rental_day_price: 90,
       condition: 'New',
       quantity: 2,
       brandId: brandId,
@@ -204,7 +204,7 @@ describe('Authentication & Authorization', () => {
 
   it('Should prevent non-admin users from updating watches', async () => {
     const updateData = {
-      rentalDayPrice: 95,
+      rental_day_price: 95,
     };
 
     const res = await request(app)
@@ -251,7 +251,7 @@ describe('Database Interaction', () => {
     const watchData = {
       model: 'Carrera',
       year: 2018,
-      rentalDayPrice: 70,
+      rental_day_price: 70,
       condition: 'Excellent',
       quantity: 4,
       brandId: brandId,
@@ -285,7 +285,7 @@ describe('Database Interaction', () => {
     const watch = new WatchModel({
       model: 'Monaco',
       year: 2017,
-      rentalDayPrice: 60,
+      rental_day_price: 60,
       condition: 'Good',
       quantity: 2,
       brand: brandId,
@@ -319,7 +319,7 @@ describe('Database Interaction', () => {
     const watchData = {
       model: 'Test Watch',
       year: 2023,
-      rentalDayPrice: 100,
+      rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
       brandId: brand._id,
@@ -356,7 +356,7 @@ describe('Database Interaction', () => {
     const watch = new WatchModel({
       model: 'Original Watch',
       year: 2022,
-      rentalDayPrice: 90,
+      rental_day_price: 90,
       condition: 'Good',
       quantity: 3,
       brand: brand._id,
@@ -396,7 +396,7 @@ describe('Database Interaction', () => {
     const watchData = {
       model: 'Imageless Watch',
       year: 2023,
-      rentalDayPrice: 100,
+      rental_day_price: 100,
       condition: 'Excellent',
       quantity: 5,
       brandId: brand._id,
@@ -442,7 +442,7 @@ describe('Admin Operations', () => {
     const watch = new WatchModel({
       model: 'Nautilus',
       year: 2022,
-      rentalDayPrice: 200,
+      rental_day_price: 200,
       condition: 'New',
       quantity: 1,
       brand: brandId,
@@ -453,7 +453,7 @@ describe('Admin Operations', () => {
 
   it('Should allow admin to update a watch', async () => {
     const updateData = {
-      rentalDayPrice: 250,
+      rental_day_price: 250,
       condition: 'excellent', // Test lowercase conversion
       quantity: 2,
     };
@@ -464,7 +464,7 @@ describe('Admin Operations', () => {
       .send(updateData);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.rentalDayPrice).toBe(updateData.rentalDayPrice);
+    expect(res.body.rental_day_price).toBe(updateData.rental_day_price);
     expect(res.body.condition).toBe('Excellent'); // Should be converted to title case
     expect(res.body.quantity).toBe(updateData.quantity);
   });
@@ -485,7 +485,7 @@ describe('Admin Operations', () => {
   it('Should handle updating a non-existent watch', async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
     const updateData = {
-      rentalDayPrice: 300,
+      rental_day_price: 300,
     };
 
     const res = await request(app)

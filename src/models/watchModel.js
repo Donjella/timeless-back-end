@@ -22,7 +22,7 @@ const watchSchema = mongoose.Schema(
         message: (props) => `${props.value} is not a valid year!`,
       },
     },
-    rentalDayPrice: {
+    rental_day_price: {
       type: Number,
       required: true,
       min: [0, 'Rental price cannot be negative'],
