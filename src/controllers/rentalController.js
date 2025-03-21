@@ -92,8 +92,8 @@ const getUserRentals = asyncHandler(async (req, res, next) => {
         select: 'model year brand rental_day_price condition image_url',
         populate: {
           path: 'brand',
-          select: 'brand_name'
-        }
+          select: 'brand_name',
+        },
       })
       .sort({ createdAt: -1 });
     res.json(rentals);
