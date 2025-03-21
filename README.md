@@ -902,13 +902,14 @@ Authorization: Bearer <your-token>
 
 ## Address Routes
 
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| POST | `/api/addresses` | Create a new address | Private |
-| GET | `/api/addresses/:id` | Get address by ID | Private |
-| PATCH | `/api/addresses/:id` | Update an address | Private |
-| DELETE | `/api/addresses/:id` | Delete an address | Private |
-| GET | `/api/addresses` | Get all addresses | Admin |
+| Method | Endpoint              | Description             | Access |
+|--------|-----------------------|-------------------------|--------|
+| POST   | `/api/addresses`      | Create a new address    | Private |
+| GET    | `/api/addresses/:id`  | Get address by ID       | Private |
+| PATCH  | `/api/addresses/:id`  | Update an address       | Admin   |
+| DELETE | `/api/addresses/:id`  | Delete an address       | Private |
+| GET    | `/api/addresses`      | Get all addresses       | Admin   |
+| PATCH    | `/api/addresses/user` | Update user's own address | Private |
 
 ## Access Levels
 
