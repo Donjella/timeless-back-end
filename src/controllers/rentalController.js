@@ -84,15 +84,18 @@ const getRentals = asyncHandler(async (req, res, next) => {
   }
 });
 
-// @desc    Get all rentals for the logged-in user
-// @route   GET /api/rentals/user
-// @access  Private (User)
 const getUserRentals = asyncHandler(async (req, res, next) => {
   try {
     const rentals = await Rental.find({ user: req.user._id })
-      .populate('watch', 'model year brand rental_day_price condition')
+      .populate({
+        path: 'watch',
+        select: 'model year brand rental_day_price condition image_url',
+        populate: {
+          path: 'brand',
+          select: 'brand_name'
+        }
+      })
       .sort({ createdAt: -1 });
-
     res.json(rentals);
   } catch (error) {
     next(error);
