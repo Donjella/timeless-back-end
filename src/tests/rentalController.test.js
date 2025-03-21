@@ -171,15 +171,30 @@ describe('Authentication & Authorization', () => {
   let userToken;
   let adminToken;
   let watch;
+  let watch1;
+  let watch2;
   let brand;
   let user;
   let admin;
+  let anotherUser;
 
   beforeEach(async () => {
     brand = new Brand({ brand_name: 'TestBrand' });
     await brand.save();
 
     watch = await createTestWatch(brand);
+
+    // Create additional watches for user rental tests
+    watch1 = await createTestWatch(brand);
+    watch2 = new Watch({
+      brand: brand._id,
+      model: 'Premium Watch',
+      year: 2022,
+      rental_day_price: 100,
+      condition: 'Excellent',
+      quantity: 3,
+    });
+    await watch2.save();
 
     user = new User(generateTestUser('rental-auth-user'));
     await user.save();
@@ -188,6 +203,9 @@ describe('Authentication & Authorization', () => {
     admin = new User(generateTestUser('rental-auth-admin', 'admin'));
     await admin.save();
     adminToken = admin.generateToken();
+
+    anotherUser = new User(generateTestUser('another-user'));
+    await anotherUser.save();
   });
 
   it('Should allow authenticated users to create a rental', async () => {
@@ -232,6 +250,62 @@ describe('Authentication & Authorization', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body._id).toBe(rental._id.toString());
+  });
+
+  // User Rentals Tests (moved from separate describe block to here)
+  it('Should allow users to get their own rentals only', async () => {
+    // Create rentals for the first user
+    const rental1 = await createTestRental(user, watch1);
+    const rental2 = await createTestRental(user, watch2);
+
+    // Create a rental for the second user
+    await createTestRental(anotherUser, watch1);
+
+    // Get first user's rentals
+    const res = await request(app)
+      .get('/api/rentals/user')
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body).toHaveLength(2);
+
+    // Verify the returned rentals belong to the first user
+    const rentalIds = res.body.map((rental) => rental._id);
+    expect(rentalIds).toContain(rental1._id.toString());
+    expect(rentalIds).toContain(rental2._id.toString());
+  });
+
+  it('Should return empty array when user has no rentals', async () => {
+    // User has no rentals yet
+    const res = await request(app)
+      .get('/api/rentals/user')
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body).toHaveLength(0);
+  });
+
+  it('Should not allow /user endpoint access without authentication', async () => {
+    const res = await request(app).get('/api/rentals/user');
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toMatch(/Not authorized, no token provided/);
+  });
+
+  it('Should return populated watch data with user rentals', async () => {
+    // Create a rental for the user
+    await createTestRental(user, watch1);
+
+    const res = await request(app)
+      .get('/api/rentals/user')
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body[0].watch).toHaveProperty('model');
+    expect(res.body[0].watch).toHaveProperty('condition');
+    expect(res.body[0].watch).toHaveProperty('rental_day_price');
   });
 });
 

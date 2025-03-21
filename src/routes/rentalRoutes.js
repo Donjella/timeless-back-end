@@ -7,11 +7,13 @@ const {
   getRentalById,
   updateRentalStatus,
   deleteRental,
+  getUserRentals,
 } = require('../controllers/rentalController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 // Authenticated User Routes (Requires Login)
 router.post('/', protect, createRental);
+router.route('/user').get(protect, getUserRentals);
 router.get('/:id', protect, getRentalById);
 
 // Admin Only Routes (Requires Admin Role)

@@ -883,6 +883,7 @@ Authorization: Bearer <your-token>
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
 | POST | `/api/rentals` | Create a new rental | Private |
+| GET | `/api/rentals/user` | Get all rentals for logged-in user | Private |
 | GET | `/api/rentals/:id` | Get rental by ID | Private |
 | GET | `/api/rentals` | Get all rentals | Admin |
 | PATCH | `/api/rentals/:id` | Update rental status | Admin |

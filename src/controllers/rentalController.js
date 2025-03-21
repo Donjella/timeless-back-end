@@ -84,6 +84,21 @@ const getRentals = asyncHandler(async (req, res, next) => {
   }
 });
 
+// @desc    Get all rentals for the logged-in user
+// @route   GET /api/rentals/user
+// @access  Private (User)
+const getUserRentals = asyncHandler(async (req, res, next) => {
+  try {
+    const rentals = await Rental.find({ user: req.user._id })
+      .populate('watch', 'model year brand rental_day_price condition')
+      .sort({ createdAt: -1 });
+
+    res.json(rentals);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @desc    Get rental by ID
 // @route   GET /api/rentals/:id
 // @access  Private (User/Admin)
@@ -167,4 +182,5 @@ module.exports = {
   getRentalById,
   updateRentalStatus,
   deleteRental,
+  getUserRentals,
 };
