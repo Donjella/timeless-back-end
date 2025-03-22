@@ -25,21 +25,29 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 8,
-      select: false, // Prevent password from being returned in queries
+      select: false,
     },
     phone_number: {
       type: String,
       trim: true,
+      validate: {
+        validator: function (value) {
+          if (!value) return true; // Optional field — allow empty
+          return /^(?:\+614|04)\d{8}$/.test(value);
+        },
+        message:
+          'Please enter a valid Australian mobile number (e.g. 0400000000 or +61400000000)',
+      },
     },
     role: {
       type: String,
       required: true,
-      enum: ['user', 'admin'], // Define allowed roles
+      enum: ['user', 'admin'],
       default: 'user',
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Address', // References the Address model
+      ref: 'Address',
     },
   },
   {
@@ -48,23 +56,20 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Method to compare entered password with stored hashed password
-userSchema.methods.matchPassword = async function matchPassword(enteredPassword) {
+// Compare password
+userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT Token
-userSchema.methods.generateToken = function generateToken() {
+// Generate token
+userSchema.methods.generateToken = function () {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined.');
   }
@@ -78,10 +83,9 @@ userSchema.methods.generateToken = function generateToken() {
       role: this.role.toLowerCase(),
     },
     process.env.JWT_SECRET,
-    { expiresIn: '1d' },
+    { expiresIn: '1d' }
   );
 };
 
-// Create and export User model
 const UserModel = mongoose.model('User', userSchema);
 module.exports = UserModel;
