@@ -1,6 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
+
 const {
   registerUser,
   loginUser,
@@ -9,8 +10,10 @@ const {
   updateUserRole,
   getUsers,
   getUserById,
-  deleteUser, // New function
+  deleteUser,
+  updateUserByEmail, // Added this new controller
 } = require('../controllers/userController');
+
 const { protect, admin } = require('../middleware/authMiddleware');
 
 // Public Routes (No Authentication Required)
@@ -25,6 +28,7 @@ router.patch('/profile', protect, updateUserProfile);
 router.get('/', protect, admin, getUsers); // Admin can get all users
 router.get('/:id', protect, admin, getUserById); // Admin can get user by ID
 router.patch('/role/:id', protect, admin, updateUserRole); // Admin can update user role
+router.patch('/email/:email', protect, admin, updateUserByEmail); // Admin can update user by email
 router.delete('/:id', protect, admin, deleteUser); // Admin can delete users
 
 module.exports = router;
