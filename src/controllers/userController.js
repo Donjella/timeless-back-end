@@ -26,7 +26,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
       street_address, suburb, state, postcode,
     } = req.body;
 
-    // Identify missing fields
     const missingFields = [];
     if (!first_name) missingFields.push('first_name');
     if (!last_name) missingFields.push('last_name');
@@ -153,11 +152,6 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user._id);
     if (!user) throw new NotFoundError('User not found');
 
-    // Debug logs
-    console.log('🔄 Updating user profile for:', req.user._id);
-    console.log('📦 Incoming data:', req.body);
-
-    // Explicitly assign known fields
     if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
     if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
     if (req.body.phone_number !== undefined) user.phone_number = req.body.phone_number;
@@ -202,32 +196,28 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
   }
 });
 
-
-
 // @desc    Update user role (Admin only)
 // @route   PATCH /api/users/role/:id
 // @access  Private/Admin
-const updateUserRole = asyncHandler(
-  async (req, res, next) => {
-    try {
-      if (req.user.role !== 'admin') {
-        throw new ForbiddenError('Access denied. Admin only.');
-      }
-
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        { role: req.body.role },
-        { new: true },
-      );
-
-      if (!updatedUser) throw new NotFoundError('User not found');
-
-      res.json({ message: `User role updated to ${updatedUser.role}` });
-    } catch (error) {
-      next(error);
+const updateUserRole = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
     }
-  },
-);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { role: req.body.role },
+      { new: true },
+    );
+
+    if (!updatedUser) throw new NotFoundError('User not found');
+
+    res.json({ message: `User role updated to ${updatedUser.role}` });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // @desc    Delete user by ID (Admin only)
 // @route   DELETE /api/users/:id
@@ -239,12 +229,8 @@ const deleteUser = asyncHandler(async (req, res, next) => {
     }
 
     const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) throw new NotFoundError('User not found');
 
-    if (!user) {
-      throw new NotFoundError('User not found');
-    }
-
-    // Optional: Delete associated address
     if (user.address) {
       await Address.findByIdAndDelete(user.address);
     }
