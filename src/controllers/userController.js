@@ -161,10 +161,10 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     }
 
     if (
-      req.body.street_address ||
-      req.body.suburb ||
-      req.body.state ||
-      req.body.postcode
+      req.body.street_address
+      || req.body.suburb
+      || req.body.state
+      || req.body.postcode
     ) {
       let address = await Address.findById(user.address);
 
@@ -244,6 +244,36 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   }
 });
 
+// @desc    Admin updates a user by email
+// @route   PATCH /api/users/email/:email
+// @access  Private/Admin
+const updateUserByEmail = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      throw new ForbiddenError('Access denied. Admin only.');
+    }
+
+    const { email } = req.params;
+    const updates = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    if (updates.first_name !== undefined) user.first_name = updates.first_name;
+    if (updates.last_name !== undefined) user.last_name = updates.last_name;
+    if (updates.phone_number !== undefined) user.phone_number = updates.phone_number;
+    if (updates.role !== undefined) user.role = updates.role;
+
+    await user.save();
+    const updatedUser = await User.findById(user._id).populate('address');
+    res.json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -253,4 +283,5 @@ module.exports = {
   updateUserProfile,
   updateUserRole,
   deleteUser,
+  updateUserByEmail,
 };
