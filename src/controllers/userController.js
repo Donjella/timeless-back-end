@@ -153,6 +153,10 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user._id);
     if (!user) throw new NotFoundError('User not found');
 
+    // Debug logs
+    console.log('🔄 Updating user profile for:', req.user._id);
+    console.log('📦 Incoming data:', req.body);
+
     // Explicitly assign known fields
     if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
     if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
@@ -190,12 +194,14 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     }
 
     await user.save();
+
     const updatedUser = await User.findById(user._id).populate('address');
     res.json(updatedUser);
   } catch (error) {
     next(error);
   }
 });
+
 
 
 // @desc    Update user role (Admin only)
