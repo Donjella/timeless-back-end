@@ -153,13 +153,21 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user._id);
     if (!user) throw new NotFoundError('User not found');
 
-    Object.assign(user, req.body);
+    // Explicitly assign known fields
+    if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
+    if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
+    if (req.body.phone_number !== undefined) user.phone_number = req.body.phone_number;
 
     if (req.body.password) {
       user.password = await bcrypt.hash(req.body.password, 10);
     }
 
-    if (req.body.street_address || req.body.suburb || req.body.state || req.body.postcode) {
+    if (
+      req.body.street_address ||
+      req.body.suburb ||
+      req.body.state ||
+      req.body.postcode
+    ) {
       let address = await Address.findById(user.address);
 
       if (address) {
@@ -188,6 +196,7 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     next(error);
   }
 });
+
 
 // @desc    Update user role (Admin only)
 // @route   PATCH /api/users/role/:id
